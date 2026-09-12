@@ -1,0 +1,821 @@
+// ============================================================================
+// ResultsWorkspace.module.scss
+// ChromaForge Interactive Results Workspace
+// Consumes design tokens from src/styles/_tokens.scss
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+// ---------------------------------------------------------------------------
+// Workspace Shell
+//
+// A constrained, layered dark workspace. The shell reveals once on mount with
+// a subtle stagger across its three regions (toolbar / sidebar / canvas).
+// ---------------------------------------------------------------------------
+
+.workspace {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 1400px);
+  margin-inline: auto;
+  padding: clamp(1rem, 2.5vw, 2rem) clamp(1rem, 3vw, 2.5rem)
+    clamp(2.5rem, 5vw, 4rem);
+}
+
+// Quiet atmospheric wash + dot field — calmer than the Dashboard hero; the
+// workspace is a working surface, not a landing page. Silver washes plus a
+// barely-visible dot matrix, all static.
+.background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle,
+      rgba(232, 234, 237, 0.04) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 10% 0%,
+      rgba(232, 234, 237, 0.06) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 38% 36% at 95% 10%,
+      rgba(110, 116, 128, 0.04) 0%,
+      transparent 55%
+    );
+  background-size:
+    26px 26px,
+    auto,
+    auto;
+}
+
+// Staggered entrance — one authored moment across the three shell regions.
+// The workspace root toggles `.entered` after two painted frames
+// (StrictMode-safe, see useEntrance), so each region's transition ramps
+// 0 → 1 with its own delay instead of relying on mount-time keyframes that
+// Strict Mode can skip.
+.toolbar,
+.sidebar,
+.canvas {
+  opacity: 0;
+  translate: 0 14px;
+}
+
+.entered {
+  .toolbar,
+  .sidebar,
+  .canvas {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity t.$duration-slow t.$ease-out-quint,
+      translate t.$duration-slow t.$ease-out-quint;
+  }
+
+  .toolbar {
+    transition-delay: 0ms;
+  }
+
+  .sidebar {
+    transition-delay: 60ms;
+  }
+
+  .canvas {
+    transition-delay: 120ms;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Workspace Toolbar — compact professional bar
+// ---------------------------------------------------------------------------
+
+.toolbar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: t.$space-4;
+  min-height: 4rem;
+  padding: t.$space-3 clamp(1rem, 2vw, 1.5rem);
+  background: t.$glass-bg-strong;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-lg;
+  backdrop-filter: blur(t.$glass-blur);
+  -webkit-backdrop-filter: blur(t.$glass-blur);
+  box-shadow: t.$shadow-md;
+}
+
+.toolbarIdentity {
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  min-width: 0;
+}
+
+.toolbarMark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: t.$radius-md;
+  background: linear-gradient(135deg, var(--logo-from), var(--logo-to));
+  border: 1px solid t.$color-border-highlight;
+  color: #fff;
+  flex-shrink: 0;
+
+  .logoMark {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.toolbarTitles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.toolbarTitle {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: -0.01em;
+  color: t.$color-text-primary;
+  @include m.truncate;
+}
+
+.toolbarSubtitle {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: t.$color-text-secondary;
+}
+
+// Generation status chip — appears from the medium breakpoint so the mobile
+// toolbar stays compact (identity + primary action).
+.toolbarStatus {
+  display: none;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    display: inline-flex;
+    align-items: center;
+    gap: t.$space-2;
+    padding: t.$space-1 t.$space-3;
+    border: 1px solid t.$color-border-default;
+    border-radius: t.$radius-full;
+    background: t.$color-bg-interactive;
+  }
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: t.$color-success;
+  box-shadow: 0 0 0 3px t.$color-success-muted;
+  flex-shrink: 0;
+}
+
+.statusLabel {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: t.$color-text-secondary;
+  white-space: nowrap;
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  margin-left: auto;
+}
+
+// Compartir remains a placeholder — clearly inactive so it never pretends to
+// work, but still legible. `.toolbarGhost` is the BASE appearance; the live
+// variants below (`.toolbarGhostEnabled`, `.toolbarGhostSaved`) override it
+// and MUST be declared AFTER it so their equal-specificity rules win on
+// source order.
+.toolbarGhost {
+  padding: t.$space-2 t.$space-3;
+  border: 1px solid transparent;
+  border-radius: t.$radius-sm;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  color: t.$color-text-secondary;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+// Save is live — enabled ghost treatment that overrides the base.
+.toolbarGhostEnabled {
+  cursor: pointer;
+  opacity: 1;
+  color: t.$color-text-secondary;
+  border-color: t.$glass-border;
+
+  &:hover:not(:disabled) {
+    border-color: t.$glass-border-highlight;
+    background: t.$glass-bg;
+    color: t.$color-text-primary;
+  }
+
+  @include m.focus-ring;
+}
+
+// Persisted state — "Guardar" becomes a quiet success confirmation once the
+// row is on the library. Premium outline treatment: transparent field, 1px
+// success border, success text, and a faint success halo on hover — never a
+// solid green block.
+.toolbarGhostSaved {
+  cursor: default;
+  color: t.$color-success;
+  border-color: t.$color-success;
+  background: transparent;
+  opacity: 1;
+
+  &:hover:not(:disabled) {
+    background: t.$color-success-muted;
+    border-color: t.$color-success;
+    color: t.$color-success;
+    box-shadow:
+      0 0 0 1px rgba(34, 197, 94, 0.35),
+      0 6px 18px rgba(34, 197, 94, 0.22);
+  }
+
+  @include m.focus-ring(2px, t.$color-success);
+}
+
+// ---------------------------------------------------------------------------
+// Exportar — Premium Red Cyber-SaaS Treatment
+//
+// The decisive export action is given a distinct crimson identity so it
+// stands apart from the neutral ghost controls in the toolbar.
+//
+//   Idle   → transparent field, 1px crimson border, crimson text/icon.
+//   Hover  → solid crimson fill, white text/icon, soft red halo (box-shadow).
+//   Active → deeper crimson, 1px downward press.
+//   Busy   → solid crimson, white loader, no halo (locked while compiling).
+//
+// The crossfade reuses the workspace's premium transition language so the
+// red control feels native, not bolted on.
+// ---------------------------------------------------------------------------
+
+.btnExport {
+  padding: t.$space-2 t.$space-3;
+  border: 1px solid t.$color-error;
+  border-radius: t.$radius-sm;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-error;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color t.$transition-fast,
+    border-color t.$transition-fast,
+    color t.$transition-fast,
+    box-shadow t.$transition-smooth,
+    transform t.$transition-premium;
+
+  &:hover:not(:disabled) {
+    background: t.$color-error;
+    border-color: t.$color-error;
+    color: #ffffff;
+    // Subtle red glow — contained, never bloom.
+    box-shadow:
+      0 0 0 1px rgba(239, 68, 68, 0.35),
+      0 8px 24px rgba(239, 68, 68, 0.28);
+  }
+
+  &:active:not(:disabled) {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff;
+    transform: translateY(1px);
+    box-shadow:
+      0 0 0 1px rgba(239, 68, 68, 0.30),
+      0 4px 12px rgba(239, 68, 68, 0.22);
+  }
+
+  // Locked while the PDF compiles — solid crimson, white loader, no halo.
+  &:disabled {
+    cursor: progress;
+    background: t.$color-error;
+    border-color: t.$color-error;
+    color: #ffffff;
+    opacity: 0.88;
+    box-shadow: none;
+  }
+
+  @include m.focus-ring(2px, t.$color-error);
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+.toolbarBack {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-2;
+  padding: t.$space-2 t.$space-4;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-sm;
+  background: transparent;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  white-space: nowrap;
+  transition:
+    transform t.$transition-premium,
+    border-color t.$transition-smooth,
+    background-color t.$transition-fast,
+    color t.$transition-fast;
+
+  &:hover {
+    transform: translateY(-1px);
+    border-color: t.$glass-border-highlight;
+    background: t.$glass-bg;
+    color: t.$color-text-primary;
+  }
+
+  @include m.focus-ring;
+}
+
+// ---------------------------------------------------------------------------
+// Workspace Body — sidebar rail + canvas
+// Mobile-first: the sidebar becomes a horizontal tab bar above the canvas.
+// ---------------------------------------------------------------------------
+
+.body {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: t.$space-4;
+  margin-top: t.$space-4;
+  align-items: start;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: t.$space-5;
+    margin-top: t.$space-5;
+  }
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: t.$space-6;
+    margin-top: t.$space-6;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Workspace Sidebar — role-based navigation
+// ---------------------------------------------------------------------------
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-3;
+  min-width: 0;
+}
+
+.sidebarLabel {
+  display: none;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    display: block;
+    padding-inline: t.$space-2;
+    font-family: t.$font-mono;
+    font-size: 10px;
+    font-weight: t.$font-weight-medium;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: t.$color-text-muted;
+  }
+}
+
+.sidebarList {
+  display: flex;
+  gap: t.$space-2;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @include m.respond-to(t.$breakpoint-md) {
+    flex-direction: column;
+    overflow-x: visible;
+    padding: t.$space-2;
+    background: t.$glass-bg;
+    border: 1px solid t.$glass-border;
+    border-radius: t.$radius-lg;
+    backdrop-filter: blur(t.$glass-blur);
+    -webkit-backdrop-filter: blur(t.$glass-blur);
+  }
+}
+
+.sidebarItem {
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  width: 100%;
+  padding: t.$space-3;
+  border: 1px solid transparent;
+  border-radius: t.$radius-md;
+  color: t.$color-text-secondary;
+  text-align: left;
+  white-space: nowrap;
+  transition:
+    background-color t.$transition-fast,
+    border-color t.$transition-fast,
+    color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-text-primary;
+    background: t.$color-bg-interactive;
+  }
+
+  @include m.focus-ring;
+}
+
+.sidebarItemActive {
+  background: t.$glass-bg-strong;
+  border-color: t.$glass-border-highlight;
+  color: t.$color-text-primary;
+}
+
+.sidebarItemText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.sidebarItemLabel {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: inherit;
+}
+
+.sidebarItemHint {
+  display: none;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    display: block;
+    font-family: t.$font-mono;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: t.$color-text-muted;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Workspace Canvas — the visual focal point
+// ---------------------------------------------------------------------------
+
+.canvas {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: t.$radius-lg;
+  border: 1px solid t.$glass-border;
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(232, 234, 237, 0.06) 0%,
+      transparent 42%
+    ),
+    rgba(255, 255, 255, 0.02);
+  box-shadow: t.$shadow-md;
+
+  // Localized top-right lighting — subtle, never bloom.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at 92% 12%,
+      rgba(185, 189, 199, 0.05) 0%,
+      transparent 40%
+    );
+  }
+}
+
+.stage {
+  position: relative;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.stageNote {
+  margin-top: t.$space-5;
+  font-family: t.$font-mono;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-muted;
+}
+
+// ---------------------------------------------------------------------------
+// Brand View — generated identity as the focal point
+// ---------------------------------------------------------------------------
+
+.brandHero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 3vw, 2rem);
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  border-radius: t.$radius-lg;
+  background: t.$glass-bg;
+  border: 1px solid t.$glass-border;
+  box-shadow: t.$shadow-md;
+
+  // Desktop: both columns stretch to the row height so the palette swatches
+  // bottom-align through `.brandPalette`'s `margin-top: auto` — the hero card
+  // reads as one cohesive unit with no stray gap below the metadata.
+  @include m.respond-to(t.$breakpoint-md) {
+    flex-direction: row;
+    align-items: stretch;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+  }
+}
+
+.logoTile {
+  display: grid;
+  place-items: center;
+  width: clamp(96px, 12vw, 120px);
+  height: clamp(96px, 12vw, 120px);
+  border-radius: t.$radius-lg;
+  background: linear-gradient(135deg, var(--logo-from), var(--logo-to));
+  border: 1px solid t.$color-border-highlight;
+  box-shadow: t.$shadow-lg;
+  color: #fff;
+  flex-shrink: 0;
+
+  .logoMark {
+    width: 68px;
+    height: 68px;
+  }
+}
+
+.logoMark {
+  display: block;
+  width: 64px;
+  height: 64px;
+  color: inherit;
+}
+
+.brandMeta {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-3;
+  min-width: 0;
+  flex: 1;
+}
+
+.brandEyebrow {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+}
+
+.brandTitle {
+  font-family: t.$font-display;
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  line-height: t.$line-height-tight;
+  color: t.$color-text-primary;
+}
+
+.brandTagline {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 52ch;
+}
+
+.brandPalette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  list-style: none;
+  margin: 0;
+  margin-top: auto;
+  padding: 0;
+}
+
+.brandPaletteItem {
+  flex: 1 1 90px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+}
+
+.brandPaletteSwatch {
+  display: block;
+  width: 100%;
+  height: 56px;
+  border-radius: t.$radius-md;
+  border: 1px solid t.$color-border-strong;
+}
+
+.brandPaletteLabel {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: t.$color-text-secondary;
+  @include m.truncate;
+}
+
+// ---------------------------------------------------------------------------
+// Colors View — palette ladder with WCAG verification
+// ---------------------------------------------------------------------------
+
+.paletteLadder {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.paletteLadderItem {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  padding: t.$space-3;
+  background: t.$glass-bg;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-md;
+  transition:
+    transform t.$transition-premium,
+    border-color t.$transition-smooth;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: t.$glass-border-highlight;
+  }
+}
+
+.paletteLadderSwatch {
+  width: 44px;
+  height: 44px;
+  border-radius: t.$radius-sm;
+  border: 1px solid t.$color-border-strong;
+  flex-shrink: 0;
+}
+
+.paletteLadderRole {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.paletteLadderName {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-primary;
+}
+
+.paletteLadderHint {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: t.$color-text-muted;
+}
+
+.paletteLadderHex {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  letter-spacing: 0.02em;
+  color: t.$color-text-secondary;
+  flex-shrink: 0;
+}
+
+.contrastBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: t.$radius-full;
+  background: t.$color-success-muted;
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: t.$color-success;
+  flex-shrink: 0;
+}
+
+.contrastBadgeFail {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: t.$color-error-muted;
+  color: t.$color-error;
+}
+
+.contrastBadgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+// ---------------------------------------------------------------------------
+// Brand Book Export Stage — off-screen PDF capture surface
+//
+// A fixed-width, opaque composition that stacks every identity chapter into
+// one continuous "brand book" sheet. Parked at -20000px so it never scrolls,
+// never receives focus and never paints on screen; html-to-image captures it
+// through its cloned document. The solid obsidian ground guarantees the
+// exported page carries the Cyber-SaaS aesthetic with no transparency.
+// ---------------------------------------------------------------------------
+
+.exportStage {
+  position: absolute;
+  top: 0;
+  left: -20000px;
+  z-index: -1;
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-8;
+  width: 1080px;
+  padding: t.$space-8;
+  background: t.$color-bg-primary;
+}
+
+.exportHeader {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-3;
+}
+
+.exportEyebrow {
+  font-family: t.$font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+}
+
+.exportTitle {
+  font-family: t.$font-display;
+  font-size: 2.75rem;
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  line-height: t.$line-height-tight;
+  color: t.$color-text-primary;
+}
+
+.exportMeta {
+  max-width: 72ch;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+}
+
+.exportSection {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-4;
+}
+
+.exportSectionLabel {
+  padding-bottom: t.$space-2;
+  border-bottom: 1px solid t.$glass-border;
+  font-family: t.$font-mono;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: t.$color-text-muted;
+}

@@ -1,0 +1,51 @@
+// ============================================================================
+// RouteTransition.module.scss
+// ChromaForge route-change entrance — fast, elegant crossfade.
+// Consumes tokens from src/styles/_tokens.scss.
+//
+// The wrapper is a flex-column flex item that passes `main`'s layout contract
+// through to the routed page (hero / auth / workspace surfaces all rely on it)
+// while owning a single state-driven entrance.
+//
+// StrictMode-safe by design: the wrapper is born hidden (opacity 0, 6px rise)
+// and `useEntrance` flips `.visible` after two painted frames, so the CSS
+// transition always ramps 0 → 1 even under the React 19 double render. No
+// mount-time @keyframes, no keyed remount — the 0% frame cannot be skipped.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+
+.transition {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+
+  // Hidden start state — painted before the first rAF, so the transition
+  // below always has a real starting frame to animate from.
+  opacity: 0;
+  translate: 0 6px;
+
+  // The wrapper is the page's composited layer during the crossfade — the
+  // hint keeps opacity/translate on the GPU for the 300ms ramp and costs
+  // nothing at rest (single full-page layer).
+  will-change: opacity, translate;
+}
+
+.visible {
+  opacity: 1;
+  translate: 0 0;
+
+  // The transition lives on the visible state only: entering pages ease in,
+  // while a navigation to a new route snaps the wrapper back to hidden
+  // instantly (no transition while hiding), so the old page never double-
+  // fades against the incoming one.
+  //
+  // Deliberately NOT gated by prefers-reduced-motion: the crossfade is core
+  // state feedback and must communicate navigation on every OS setting
+  // (Windows often reports `reduce` for battery saving, not medical need).
+  transition:
+    opacity 300ms t.$ease-out-expo,
+    translate 300ms t.$ease-out-expo;
+}

@@ -1,0 +1,258 @@
+// ============================================================================
+// ChromaForge Design Tokens
+// Dark Cyber-SaaS Visual Foundation
+// ============================================================================
+
+// ---------------------------------------------------------------------------
+// Color System — Semantic Tokens
+// ---------------------------------------------------------------------------
+
+// Backgrounds — Tactical Monochrome: neutral obsidian, zero blue cast, so
+// the product's generated colors own every hue on screen.
+$color-bg-primary: #0a0a0b;
+$color-bg-secondary: #101013;
+$color-bg-elevated: #161619;
+$color-bg-interactive: #1e1e23;
+
+// Surfaces — neutral platinum-tinted grays, single gray family.
+$color-surface-base: #0d0d10;
+$color-surface-primary: #131316;
+$color-surface-secondary: #1a1a1f;
+$color-surface-elevated: #222228;
+$color-surface-interactive: #2a2a31;
+
+// Text — ghost white over silver grays.
+$color-text-primary: #f2f3f5;
+$color-text-secondary: #a7abb5;
+$color-text-muted: #6b707c;
+$color-text-disabled: #3a3d45;
+
+// Borders — neutral white-alpha hairlines.
+$color-border-subtle: rgba(255, 255, 255, 0.07);
+$color-border-default: rgba(255, 255, 255, 0.11);
+$color-border-strong: rgba(255, 255, 255, 0.18);
+$color-border-highlight: rgba(255, 255, 255, 0.26);
+
+// Semantic States
+$color-success: #22c55e;
+$color-success-muted: rgba(34, 197, 94, 0.15);
+$color-warning: #f59e0b;
+$color-warning-muted: rgba(245, 158, 11, 0.15);
+$color-error: #ef4444;
+$color-error-muted: rgba(239, 68, 68, 0.15);
+$color-info: #3b82f6;
+$color-info-muted: rgba(59, 130, 246, 0.15);
+
+// Brand Accents — Tactical Monochrome: a single silver family. Names are
+// kept for cross-component compatibility; every value is desaturated
+// platinum so chrome never competes with generated color.
+$color-accent-primary: #e8eaed;
+$color-accent-primary-hover: #ffffff;
+$color-accent-secondary: #9aa0ae;
+$color-accent-cyan: #b9bdc7;
+$color-accent-cyan-hover: #e8eaed;
+
+// ---------------------------------------------------------------------------
+// Gradient System
+// ---------------------------------------------------------------------------
+
+$gradient-primary:
+  linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #b9bdc7 55%,
+    #6e7480 100%
+  );
+
+$gradient-accent:
+  linear-gradient(
+    135deg,
+    #e8eaed 0%,
+    #6e7480 100%
+  );
+
+$gradient-mesh:
+  radial-gradient(
+    circle at top left,
+    rgba(232, 234, 237, 0.10) 0%,
+    transparent 45%
+  ),
+  radial-gradient(
+    circle at bottom right,
+    rgba(154, 160, 174, 0.10) 0%,
+    transparent 40%
+  );
+
+// ---------------------------------------------------------------------------
+// Elevation System — Multidimensional Shadows
+// ---------------------------------------------------------------------------
+
+$shadow-xs:
+  0 1px 2px rgba(0, 0, 0, 0.20);
+
+$shadow-sm:
+  0 2px 8px rgba(0, 0, 0, 0.24);
+
+$shadow-md:
+  0 12px 30px rgba(0, 0, 0, 0.28),
+  0 4px 12px rgba(0, 0, 0, 0.18);
+
+$shadow-lg:
+  0 20px 60px rgba(0, 0, 0, 0.34),
+  0 8px 24px rgba(0, 0, 0, 0.22);
+
+$shadow-xl:
+  0 40px 100px rgba(0, 0, 0, 0.42),
+  0 20px 50px rgba(0, 0, 0, 0.28);
+
+// ---------------------------------------------------------------------------
+// Glassmorphism Primitives
+// ---------------------------------------------------------------------------
+
+$glass-bg: rgba(255, 255, 255, 0.04);
+$glass-bg-strong: rgba(255, 255, 255, 0.07);
+$glass-border: rgba(255, 255, 255, 0.10);
+$glass-border-highlight: rgba(255, 255, 255, 0.16);
+$glass-blur: 20px;
+$glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.24);
+
+// ---------------------------------------------------------------------------
+// Typography
+// ---------------------------------------------------------------------------
+
+// Font Families
+$font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+$font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+
+// Fluid Type Scale — Display & Headings
+$font-size-display: clamp(2.75rem, 6vw, 5.5rem);
+$font-size-h1: clamp(2.25rem, 4vw, 4rem);
+$font-size-h2: clamp(1.75rem, 3vw, 2.75rem);
+$font-size-h3: clamp(1.375rem, 2vw, 2rem);
+$font-size-h4: clamp(1.125rem, 1.5vw, 1.5rem);
+
+// Body Type Scale
+$font-size-body: 1rem;
+$font-size-body-lg: 1.125rem;
+$font-size-small: 0.875rem;
+$font-size-xs: 0.75rem;
+
+// Font Weights
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-weight-heading: 800;
+$font-weight-display: 900;
+
+// Line Heights
+$line-height-tight: 1.15;
+$line-height-snug: 1.3;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.65;
+
+// Letter Spacing
+$tracking-tight: -0.03em;
+$tracking-normal: 0;
+$tracking-wide: 0.02em;
+
+// ---------------------------------------------------------------------------
+// Spacing Scale
+// ---------------------------------------------------------------------------
+
+$space-px: 1px;
+$space-0: 0;
+$space-1: 0.25rem;   // 4px
+$space-2: 0.5rem;    // 8px
+$space-3: 0.75rem;   // 12px
+$space-4: 1rem;      // 16px
+$space-5: 1.25rem;   // 20px
+$space-6: 1.5rem;    // 24px
+$space-8: 2rem;      // 32px
+$space-10: 2.5rem;   // 40px
+$space-12: 3rem;     // 48px
+$space-16: 4rem;     // 64px
+$space-20: 5rem;     // 80px
+$space-24: 6rem;     // 96px
+$space-32: 8rem;     // 128px
+
+// ---------------------------------------------------------------------------
+// Border Radius
+// ---------------------------------------------------------------------------
+
+$radius-none: 0;
+$radius-sm: 0.375rem;   // 6px
+$radius-md: 0.625rem;   // 10px
+$radius-lg: 0.875rem;   // 14px
+$radius-xl: 1.25rem;    // 20px
+$radius-2xl: 1.5rem;    // 24px
+$radius-full: 9999px;
+
+// ---------------------------------------------------------------------------
+// Motion & Transition Tokens
+//
+// Easing strategy (natural, physics-aware motion):
+//   - Entrances           → strong ease-out curves (start fast, settle soft).
+//   - On-screen movement   → strong ease-in-out (decisive, no dead zones).
+//   - Hover / color change → strong ease-out, fast durations (responsive).
+//   - Constant loops       → linear or neutral ease-in-out (marquee, ambient).
+// Durations stay in the 150–350ms band for UI feedback; only choreographed
+// sequences (splash, completion) exceed it.
+// ---------------------------------------------------------------------------
+
+// Easing Curves
+$ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);         // premium entrances — route crossfade, splash
+$ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);       // decisive UI entrances — cards, headers, workspace
+$ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);        // soft entrances — auth card, dropdowns, step drift
+$ease-out: cubic-bezier(0.23, 1, 0.32, 1);             // strong ease-out — hovers, press, micro feedback
+$ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);  // decisive on-screen movement — stage drift, morphs
+$ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);          // iOS-like drawer deceleration
+$ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);     // subtle overshoot — delight pops (check mark)
+$ease-standard: cubic-bezier(0.4, 0, 0.2, 1);          // neutral default — color, loops, ambient
+
+// Transition Shorthand Tokens
+$transition-fast: 160ms $ease-out;                    // press/hover color, borders
+$transition-smooth: 260ms $ease-out;                  // hover elevation — shadows, borders
+$transition-premium: 300ms $ease-out-quint;           // hover lifts — premium but responsive
+
+// Duration Tokens
+$duration-fast: 160ms;
+$duration-normal: 280ms;
+$duration-slow: 340ms;
+
+// ---------------------------------------------------------------------------
+// Responsive Breakpoints — Mobile-First
+// ---------------------------------------------------------------------------
+
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// ---------------------------------------------------------------------------
+// Header Height Contract
+// The header is a classic, edge-to-edge, full-width navigation bar that lives
+// in normal document flow (`position: sticky; top: 0`) with a strictly fixed
+// height. Because it is in flow, `<main>` needs no clearance padding — content
+// follows it naturally. The app shell is a flex column (`main` grows with
+// `flex: 1`), so full-bleed sections (hero fold, centered auth canvas) fill
+// the visible band below the nav bar without subtracting chrome tokens from
+// viewport math — the footer below them is content-sized and never part of
+// any height calculation.
+// ---------------------------------------------------------------------------
+
+$header-height: 64px;
+
+// ---------------------------------------------------------------------------
+// Z-Index Layers
+// ---------------------------------------------------------------------------
+
+$z-base: 0;
+$z-dropdown: 100;
+$z-sticky: 200;
+$z-overlay: 300;
+$z-modal: 400;
+$z-toast: 500;
+$z-splash: 600;

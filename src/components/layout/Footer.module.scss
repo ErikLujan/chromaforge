@@ -1,0 +1,281 @@
+// ============================================================================
+// Footer.module.scss
+// ChromaForge Premium Asymmetric Footer
+// Consumes design tokens from src/styles/_tokens.scss
+//
+// Composition: an asymmetric split, not a centered column grid. The brand
+// block anchors the left (mark + wordmark lockup, slogan, copyright); the
+// two navigation columns group on the right behind a wide gap. The band is
+// declared by a 1px gradient hairline (the world's hairline grammar scaled
+// to a full-width edge) over a faint ambient radial on `$color-surface-base`.
+//
+// Typography follows the footer contract: mono uppercase headings in muted
+// silver, links in secondary text that lift to primary with a 2px X-axis
+// slide and an underline reveal (transparent decoration by default — no
+// underline until hover).
+//
+// Responsive: below the sm breakpoint the split stacks — brand on top, the
+// link columns spreading across the full width beneath it. Paddings stay
+// tight and purposeful; the footer is never a giant empty block.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+// ---------------------------------------------------------------------------
+// Footer — content-sized band with a gradient hairline edge
+//
+// `position: relative; z-index: 0` guarantees the footer paints above any
+// full-viewport FIXED layer below it in the DOM (e.g. the auth section's mesh
+// background), so atmospheric gradients can never wash over footer content.
+// The ambient background is two whisper-soft neutral radials (ghost white +
+// silver) over the base surface — static, no blur, no drift.
+// ---------------------------------------------------------------------------
+
+.footer {
+  position: relative;
+  z-index: t.$z-base;
+  width: 100%;
+
+  background:
+    radial-gradient(
+      ellipse 55% 140% at 14% -20%,
+      rgba(232, 234, 237, 0.06) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 45% 130% at 88% -20%,
+      rgba(154, 160, 174, 0.05) 0%,
+      transparent 55%
+    ),
+    t.$color-surface-base;
+
+  // Top edge — a 1px silver hairline instead of a flat border: the same
+  // accent grammar as the eyebrows and section rules, stretched full width.
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(232, 234, 237, 0.4) 22%,
+      rgba(185, 189, 199, 0.32) 50%,
+      rgba(232, 234, 237, 0.4) 78%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Inner — asymmetric split
+//
+// Brand block left, navigation right, `space-between` across the full
+// measure. On narrow viewports the wrap falls back to a column: brand on
+// top, columns beneath. Paddings are clamped and tight — no empty block.
+// ---------------------------------------------------------------------------
+
+.inner {
+  position: relative;
+  width: 100%;
+  max-width: t.$breakpoint-2xl;
+  margin: 0 auto;
+  padding: clamp(2.25rem, 4vw, 3rem) clamp(1.25rem, 4vw, 3rem)
+    clamp(1.5rem, 3vw, 2.25rem);
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(2rem, 5vw, 4rem);
+  flex-wrap: wrap;
+}
+
+// ---------------------------------------------------------------------------
+// Brand block — left anchor
+// ---------------------------------------------------------------------------
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: t.$space-3;
+  max-width: 32ch;
+}
+
+// The brand lockup mirrors the header: mark + wordmark, with the mark's
+// quiet hover micro-interaction (scale + tilt). No glow halo — a drop-shadow
+// would trace the circular clip and read as a ring around the logo.
+.brandLink {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-3;
+  text-decoration: none;
+  color: t.$color-text-primary;
+
+  &:hover {
+    color: t.$color-text-primary;
+
+    .brandMark {
+      transform: scale(1.05) rotate(-4deg);
+    }
+  }
+
+  @include m.focus-ring;
+}
+
+.brandMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  border-radius: t.$radius-full;
+  overflow: hidden;
+  transition: transform t.$transition-premium;
+}
+
+.brandMarkIcon {
+  width: 36px;
+  height: 36px;
+  display: block;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  // Feather the tile's baked bright rim into the footer ground — same
+  // treatment as the header mark, so no circular edge survives.
+  -webkit-mask-image: radial-gradient(circle, black 84%, transparent 97%);
+  mask-image: radial-gradient(circle, black 84%, transparent 97%);
+}
+
+.brandName {
+  font-family: t.$font-body;
+  font-size: t.$font-size-body;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-wide;
+  color: t.$color-text-primary;
+}
+
+.slogan {
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 30ch;
+}
+
+.copyright {
+  margin-top: t.$space-2;
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  letter-spacing: 0.02em;
+  color: t.$color-text-muted;
+  max-width: none;
+}
+
+// ---------------------------------------------------------------------------
+// Navigation — two columns grouped by a wide gap
+// ---------------------------------------------------------------------------
+
+.nav {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(2.5rem, 6vw, 4.5rem);
+  flex-wrap: wrap;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-3;
+  min-width: 0;
+}
+
+.heading {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(185, 189, 199, 0.8);
+  // Optical alignment: links below start after a 14px icon + 0.5rem gap, so
+  // the header carries the identical inset — its left edge lands exactly on
+  // the visual left edge of the link labels. Letter-spacing only pads the
+  // right side, so no compensation is needed there.
+  padding-left: calc(14px + 0.5rem);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+  list-style: none;
+}
+
+// Links start in secondary text with a transparent underline; hovering lifts
+// the color to primary, slides the label 2px along the X axis, and reveals a
+// soft silver underline (the color transition makes the reveal animate).
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-2;
+  width: fit-content;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-regular;
+  color: t.$color-text-secondary;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  text-decoration-color: transparent;
+  transition:
+    color t.$transition-fast,
+    transform t.$transition-fast,
+    text-decoration-color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-text-primary;
+    transform: translateX(2px);
+    text-decoration-color: rgba(185, 189, 199, 0.65);
+  }
+
+  @include m.focus-ring;
+}
+
+// Contextual link glyph — silver at rest, riding the link's own color
+// transition on hover. Fixed box so every label starts on the same
+// vertical rhythm; kills the ragged left margin.
+.linkIcon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  opacity: 0.65;
+  transition: opacity t.$transition-fast;
+
+  .link:hover & {
+    opacity: 1;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Responsive — below sm: brand on top, columns spread below
+// ---------------------------------------------------------------------------
+
+@include m.respond-below(t.$breakpoint-sm) {
+  .inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nav {
+    width: 100%;
+    justify-content: space-between;
+    gap: t.$space-8;
+  }
+}

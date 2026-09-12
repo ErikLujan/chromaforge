@@ -1,0 +1,767 @@
+// ============================================================================
+// Header.module.scss
+// ChromaForge Classic Navigation Bar + Mobile Drawer
+// Consumes design tokens from src/styles/_tokens.scss
+//
+// HARD RESET: the old floating glass pill is gone. This header is a classic,
+// edge-to-edge, full-width premium navigation bar that lives in normal document
+// flow (`position: sticky; top: 0`) with a strictly fixed height of 64px.
+// The bar is a deep obsidian surface defined by its bottom hairline only — no
+// pill radius, no floating shadow, no glass blur. Page content begins directly
+// beneath it; the avatar dropdown floats above everything at the modal layer.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+// ---------------------------------------------------------------------------
+// Header Shell — edge-to-edge obsidian bar
+//
+// `position: sticky` keeps the bar in flow (no clearance hacks anywhere) while
+// pinning it to the top of the viewport. The background is opaque obsidian
+// (`$color-bg-primary`), so scrolling content disappears cleanly beneath it.
+// Elevation comes from a single 1px `$glass-border` hairline on the bottom
+// edge — deliberately shadowless and blurless, per the reset.
+// ---------------------------------------------------------------------------
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: t.$z-sticky;
+  isolation: isolate;
+  width: 100%;
+  height: t.$header-height;
+  background: t.$color-bg-primary;
+  border: none;
+  border-bottom: 1px solid t.$glass-border;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+
+  &::before,
+  &::after {
+    content: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Inner Container — centers content, constrains width
+// ---------------------------------------------------------------------------
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-4;
+  width: 100%;
+  height: 100%;
+  max-width: t.$breakpoint-2xl;
+  margin: 0 auto;
+  padding-inline: clamp(1rem, 3vw, 2rem);
+}
+
+// ---------------------------------------------------------------------------
+// Brand
+// ---------------------------------------------------------------------------
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  text-decoration: none;
+  color: t.$color-text-primary;
+  flex-shrink: 0;
+
+  &:hover {
+    color: t.$color-text-primary;
+  }
+
+  // Subtle scale + tilt on the mark — a quiet, intentional micro-interaction.
+  &:hover .brandMark {
+    transform: scale(1.06) rotate(-4deg);
+  }
+}
+
+// The custom brand mark floats freely — no gradient tile, no bounding box,
+// no ring. The wrapper only centers it and carries the hover
+// micro-interaction. Border/box-shadow/outline are hard-reset here so no
+// UA or future global rule can ever draw a circular line around the mark.
+.brandMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  border-radius: t.$radius-full;
+  overflow: hidden;
+  transition: transform t.$transition-premium;
+}
+
+.brandMarkIcon {
+  width: 40px;
+  height: 40px;
+  display: block;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  // Feather the tile's baked bright rim into the bar: the outermost ~14%
+  // dissolves to transparent, so no hard circular edge survives the clip and
+  // the geometry floats clean.
+  -webkit-mask-image: radial-gradient(circle, black 84%, transparent 97%);
+  mask-image: radial-gradient(circle, black 84%, transparent 97%);
+}
+
+.brandName {
+  font-family: t.$font-body;
+  font-size: t.$font-size-body;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-wide;
+  color: t.$color-text-primary;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    font-size: t.$font-size-body-lg;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Desktop Navigation
+// ---------------------------------------------------------------------------
+
+.navigation {
+  display: none;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    display: flex;
+    align-items: center;
+    gap: t.$space-1;
+    margin-left: t.$space-10;
+  }
+}
+
+.navLink {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: t.$space-2 t.$space-3;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  text-decoration: none;
+  border-radius: t.$radius-sm;
+  transition: color t.$transition-fast;
+  white-space: nowrap;
+
+  // Animated gradient underline — the product's signature edge detail
+  &::after {
+    content: '';
+    position: absolute;
+    left: t.$space-3;
+    right: t.$space-3;
+    bottom: 4px;
+    height: 1px;
+    background: t.$gradient-primary;
+    transform: scaleX(0);
+    transform-origin: left center;
+    opacity: 0;
+    transition:
+      transform t.$transition-smooth,
+      opacity t.$transition-smooth;
+  }
+
+  &:hover {
+    color: t.$color-text-primary;
+
+    &::after {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+  }
+
+  @include m.focus-ring;
+
+  &:active {
+    color: t.$color-text-primary;
+  }
+}
+
+.navLinkActive {
+  color: t.$color-text-primary;
+
+  &::after {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Header Actions — right side
+// ---------------------------------------------------------------------------
+
+.actions {
+  display: none;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    display: flex;
+    align-items: center;
+    gap: t.$space-2;
+    margin-left: auto;
+  }
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-2 t.$space-4;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  background: transparent;
+  border: 1px solid t.$color-border-subtle;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  // Explicit never-underline: these are anchors acting as buttons, and the
+  // global link color must never leak into them on hover.
+  text-decoration: none;
+  transition:
+    color t.$transition-fast,
+    border-color t.$transition-fast,
+    background-color t.$transition-fast;
+  white-space: nowrap;
+
+  &:hover {
+    color: t.$color-text-primary;
+    border-color: t.$color-border-default;
+    background-color: t.$color-bg-interactive;
+    text-decoration: none;
+  }
+
+  @include m.focus-ring;
+}
+
+.actionButtonPrimary {
+  position: relative;
+  overflow: hidden;
+  // Tactical Monochrome: ghost-white slab, obsidian label. White-on-silver
+  // is a contrast failure — obsidian-on-white exceeds AA at this size.
+  color: #0a0a0b;
+  background: #f2f3f5;
+  border-color: transparent;
+
+  &:hover {
+    color: #0a0a0b;
+    text-decoration: none;
+    box-shadow: 0 0 20px rgba(242, 243, 245, 0.10);
+  }
+
+  &:active {
+    color: #0a0a0b;
+  }
+
+  // Cursor-tracked graphite wash — shared spotlight system.
+  @include m.spotlight-fill($size: 100px);
+}
+
+// ---------------------------------------------------------------------------
+// Auth Actions — signed-out CTAs / signed-in avatar dropdown
+// ---------------------------------------------------------------------------
+
+.actionPlaceholder {
+  width: 168px;
+  height: 36px;
+}
+
+.userMenu {
+  position: relative;
+  z-index: t.$z-overlay;
+}
+
+.avatarButton {
+  display: flex;
+  align-items: center;
+  gap: t.$space-2;
+  padding: t.$space-1 t.$space-2;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  transition:
+    border-color t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &:hover {
+    border-color: t.$color-border-default;
+    background-color: t.$color-bg-interactive;
+  }
+
+  @include m.focus-ring;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: t.$gradient-primary;
+  border-radius: t.$radius-full;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarInitials {
+  font-family: t.$font-body;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: 0.02em;
+  // Obsidian on the silver gradient tile — white initials would sink.
+  color: #0a0a0b;
+}
+
+.avatarChevron {
+  color: t.$color-text-secondary;
+  transition: transform t.$transition-fast;
+}
+
+.avatarChevronOpen {
+  transform: rotate(180deg);
+}
+
+// ---------------------------------------------------------------------------
+// Avatar Dropdown — elevated obsidian menu at the modal layer
+//
+// The dropdown must flawlessly overlap all page content, so it participates at
+// the highest non-toast z-index (9999). It sits on an elevated obsidian
+// surface with a glass hairline — crisp, readable, and always on top.
+// ---------------------------------------------------------------------------
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + t.$space-3);
+  right: 0;
+  z-index: 9999;
+  min-width: 248px;
+  padding: t.$space-2;
+  background: t.$glass-bg-strong;
+  border: 1px solid t.$glass-border-highlight;
+  border-radius: t.$radius-lg;
+  backdrop-filter: blur(t.$glass-blur) saturate(140%);
+  -webkit-backdrop-filter: blur(t.$glass-blur) saturate(140%);
+  box-shadow: t.$shadow-xl;
+  animation: dropdownIn 200ms t.$ease-out-quart both;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdownHeader {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-1;
+  min-width: 0;
+  padding: t.$space-3;
+}
+
+.dropdownName {
+  font-family: t.$font-body;
+  font-size: t.$font-size-body;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownEmail {
+  font-size: t.$font-size-xs;
+  letter-spacing: t.$tracking-normal;
+  color: t.$color-text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownDivider {
+  height: 1px;
+  margin: t.$space-1 0;
+  background: t.$color-border-subtle;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  width: 100%;
+  padding: t.$space-2 t.$space-3;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  background: transparent;
+  border: none;
+  border-radius: t.$radius-md;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-text-primary;
+    background-color: t.$color-bg-interactive;
+
+    svg {
+      color: t.$color-accent-primary;
+    }
+  }
+
+  @include m.focus-ring;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    transition: color t.$transition-fast;
+  }
+}
+
+.dropdownItemDanger {
+  color: t.$color-error;
+
+  &:hover {
+    color: t.$color-error;
+    background-color: t.$color-error-muted;
+
+    svg {
+      color: t.$color-error;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Hamburger Button — mobile only
+// ---------------------------------------------------------------------------
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    display: none;
+  }
+
+  @include m.focus-ring;
+
+  span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    margin: 0 auto;
+    background-color: t.$color-text-primary;
+    border-radius: t.$radius-full;
+    transform-origin: center;
+    // Morph (line → X) is on-screen movement — decisive in-out curve, never
+    // a generic ease.
+    transition:
+      transform 260ms t.$ease-in-out-strong,
+      opacity t.$transition-fast;
+    will-change: transform, opacity;
+  }
+}
+
+.hamburgerOpen {
+  span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile Overlay — backdrop behind drawer
+// ---------------------------------------------------------------------------
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: t.$z-overlay;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 1;
+  transition: opacity t.$transition-smooth;
+  will-change: opacity;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    display: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile Drawer — full-height obsidian sheet
+//
+// Follows the bar's material language: opaque obsidian, hairline border, one
+// clean edge. No floating glass pill — the sheet slides from the right edge
+// and stays flush against the viewport.
+// ---------------------------------------------------------------------------
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: t.$z-modal;
+  width: min(320px, 85vw);
+  display: flex;
+  flex-direction: column;
+  background: t.$color-bg-secondary;
+  border-left: 1px solid t.$glass-border;
+  box-shadow: t.$shadow-xl;
+  transform: translateX(100%);
+  opacity: 1;
+  transition:
+    transform 280ms t.$ease-drawer,
+    opacity 280ms t.$ease-drawer;
+  will-change: transform, opacity;
+  overflow-y: auto;
+
+  @include m.custom-scrollbar;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    display: none;
+  }
+}
+
+.drawerOpen {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+// ---------------------------------------------------------------------------
+// Drawer Header — brand + close button
+// ---------------------------------------------------------------------------
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: t.$space-4 t.$space-5;
+  border-bottom: 1px solid t.$glass-border;
+}
+
+.drawerClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: t.$color-text-secondary;
+  background: transparent;
+  border: 1px solid t.$color-border-subtle;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  transition:
+    color t.$transition-fast,
+    border-color t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-text-primary;
+    border-color: t.$color-border-default;
+    background-color: t.$color-bg-interactive;
+  }
+
+  @include m.focus-ring;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Drawer Navigation
+// ---------------------------------------------------------------------------
+
+.drawerNav {
+  display: flex;
+  flex-direction: column;
+  padding: t.$space-6 t.$space-4;
+  gap: t.$space-2;
+  flex: 1;
+}
+
+.drawerLink {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  padding: t.$space-3 t.$space-4;
+  font-family: t.$font-body;
+  font-size: t.$font-size-body-lg;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  text-decoration: none;
+  border-radius: t.$radius-md;
+  transition:
+    color t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-text-primary;
+    background-color: t.$glass-bg;
+  }
+
+  @include m.focus-ring;
+}
+
+.drawerLinkActive {
+  color: t.$color-text-primary;
+  background-color: t.$glass-bg-strong;
+
+  // Gradient accent rail — a clear, premium active state
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    border-radius: t.$radius-full;
+    background: t.$gradient-primary;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Drawer Footer — actions section
+// ---------------------------------------------------------------------------
+
+.drawerFooter {
+  padding: t.$space-4 t.$space-5;
+  border-top: 1px solid t.$color-border-subtle;
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+}
+
+.drawerActionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: t.$space-3 t.$space-4;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  background: transparent;
+  border: 1px solid t.$color-border-subtle;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  // Explicit never-underline (anchors acting as buttons).
+  text-decoration: none;
+  transition:
+    color t.$transition-fast,
+    border-color t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-text-primary;
+    border-color: t.$color-border-default;
+    background-color: t.$color-bg-interactive;
+    text-decoration: none;
+  }
+
+  @include m.focus-ring;
+}
+
+.drawerActionButtonPrimary {
+  position: relative;
+  overflow: hidden;
+  color: #0a0a0b;
+  background: #f2f3f5;
+  border-color: transparent;
+
+  &:hover {
+    color: #0a0a0b;
+    text-decoration: none;
+  }
+
+  &:active {
+    color: #0a0a0b;
+  }
+
+  @include m.spotlight-fill($size: 140px);
+}
+
+.drawerUser {
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  padding: t.$space-2 t.$space-1 t.$space-4;
+}
+
+.drawerUserMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.drawerUserName {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: t.$color-text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawerUserEmail {
+  font-size: t.$font-size-xs;
+  color: t.$color-text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

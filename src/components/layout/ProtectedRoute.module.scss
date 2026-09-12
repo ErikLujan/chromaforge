@@ -1,0 +1,34 @@
+@use '../../styles/tokens' as t;
+
+// ===========================================================================
+// ProtectedRoute — Auth Check Status
+// ===========================================================================
+
+.loader {
+  min-height: 40vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-3;
+  padding: t.$space-6;
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: t.$color-accent-primary;
+  animation: pulse 1.4s t.$ease-standard infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}

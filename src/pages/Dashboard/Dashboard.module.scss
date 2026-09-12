@@ -1,0 +1,887 @@
+// ============================================================================
+// Dashboard.module.scss
+// ChromaForge Master-Detail Workspace
+//
+// Hard Visual Reset: the bento card grid is retired. The layout is a CSS
+// Grid ledger — a borderless typographic metrics row, a 60/40 master-detail
+// split, and exactly one elevated surface (the sticky glass detail pane).
+// Consumes design tokens from src/styles/_tokens.scss.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+// ---------------------------------------------------------------------------
+// Dashboard Section
+// ---------------------------------------------------------------------------
+
+.dashboard {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+}
+
+// Faint atmospheric wash + retro grid — quieter than the Home hero, but the
+// workspace is a ledger, so it earns a technical grid (Reactbits retro-grid
+// inspiration, monochrome): hairline silver rules at 4% under two whisper
+// washes. Static layers, painted once, pointer-transparent.
+.background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background:
+    linear-gradient(rgba(232, 234, 237, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 234, 237, 0.04) 1px, transparent 1px),
+    radial-gradient(
+      ellipse 60% 50% at 12% 0%,
+      rgba(232, 234, 237, 0.06) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 42% 40% at 92% 8%,
+      rgba(154, 160, 174, 0.05) 0%,
+      transparent 55%
+    );
+  background-size:
+    44px 44px,
+    44px 44px,
+    auto,
+    auto;
+}
+
+// ---------------------------------------------------------------------------
+// Container — fluid width that uses the viewport without sprawling
+// ---------------------------------------------------------------------------
+
+.container {
+  position: relative;
+  z-index: 1;
+  width: min(1440px, 94vw);
+  margin: 0 auto;
+  // Top pad stays modest: `<main>` already supplies the global header clearance.
+  padding: clamp(1rem, 2vw, 1.5rem) 0 clamp(3rem, 6vw, 5rem);
+
+  @include m.respond-below(t.$breakpoint-md) {
+    width: 100%;
+    padding-inline: clamp(1.25rem, 4vw, 2rem);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Page Header — compact workspace introduction
+// ---------------------------------------------------------------------------
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: t.$space-4;
+  margin-bottom: t.$space-6;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: t.$space-8;
+    margin-bottom: t.$space-8;
+  }
+}
+
+.pageHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+  max-width: 60ch;
+}
+
+.pageEyebrow {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+}
+
+.pageTitle {
+  font-family: t.$font-body;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+}
+
+.pageDescription {
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+}
+
+.primaryAction {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-2;
+  padding: t.$space-3 t.$space-5;
+  border-radius: t.$radius-md;
+  border: 1px solid transparent;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-wide;
+  // Obsidian on ghost-white — the previous white-on-gradient pairing fails
+  // against the silver gradient. Overflow hidden contains the spotlight wash.
+  color: #0a0a0b;
+  background: #f2f3f5;
+  overflow: hidden;
+  box-shadow: t.$shadow-sm;
+  cursor: pointer;
+  transition:
+    filter t.$transition-fast,
+    box-shadow t.$transition-fast,
+    translate t.$transition-fast;
+
+  &:hover {
+    filter: brightness(1.04);
+    box-shadow:
+      t.$shadow-md,
+      0 0 24px rgba(242, 243, 245, 0.10);
+    translate: 0 -1px;
+  }
+
+  &:active {
+    translate: 0 0;
+    filter: brightness(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid t.$color-accent-cyan-hover;
+    outline-offset: 2px;
+  }
+
+  // Cursor-tracked graphite wash — shared spotlight system.
+  @include m.spotlight-fill($size: 140px);
+}
+
+// ---------------------------------------------------------------------------
+// Metrics — borderless typography floating on the obsidian ground.
+// Hairline dividers between metrics; no cards, no surfaces.
+// ---------------------------------------------------------------------------
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(9rem, 24vw, 13rem), 1fr));
+  gap: t.$space-5;
+  padding-bottom: t.$space-6;
+  border-bottom: 1px solid t.$color-border-subtle;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-1;
+
+  & + & {
+    padding-left: t.$space-6;
+    border-left: 1px solid t.$color-border-subtle;
+  }
+
+  @include m.respond-below(t.$breakpoint-sm) {
+    & + & {
+      padding-left: 0;
+      padding-top: t.$space-4;
+      border-left: none;
+      border-top: 1px solid t.$color-border-subtle;
+    }
+  }
+}
+
+.metricLabel {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: t.$color-text-secondary;
+}
+
+.metricValue {
+  font-family: t.$font-display;
+  // Fluid numerals — the metric IS the surface; no container needed.
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  font-weight: t.$font-weight-bold;
+  line-height: t.$line-height-tight;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+
+  &Accent {
+    color: t.$color-accent-primary-hover;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Workspace — the Master-Detail split.
+// Mobile: single column (master, then detail). ≥lg: 60/40 with a sticky pane.
+// ---------------------------------------------------------------------------
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'master'
+    'detail';
+  gap: t.$space-6;
+  padding-top: t.$space-6;
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); // 60 / 40
+    grid-template-areas:
+      'master detail'
+      'master detail';
+    align-items: start;
+    gap: t.$space-8;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Master — the identity library as hairline-ruled rows, not cards.
+// ---------------------------------------------------------------------------
+
+.master {
+  grid-area: master;
+  min-width: 0;
+}
+
+.brandList,
+.skeletonList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-4;
+  width: 100%;
+  // Tight vertical rhythm — rows stay scannable in bulk.
+  padding: t.$space-3 t.$space-3;
+  background: transparent;
+  border: none;
+  // Hairline rule between rows; the list closes on the same weight.
+  border-bottom: 1px solid t.$color-border-subtle;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color t.$transition-fast,
+    box-shadow t.$transition-fast;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  &:focus-visible {
+    outline: 2px solid t.$color-accent-cyan-hover;
+    outline-offset: -2px;
+    border-radius: t.$radius-sm;
+  }
+
+  &:active {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.brandRowActive {
+  background-color: t.$color-surface-primary;
+  // Accent selection marker — a 2px inset edge plus surface elevation.
+  box-shadow:
+    inset 2px 0 0 t.$color-accent-primary,
+    t.$shadow-xs;
+
+  .brandName {
+    color: t.$color-accent-primary-hover;
+  }
+
+  .brandSwatch {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.18),
+      t.$shadow-xs;
+  }
+
+  &:hover {
+    background-color: t.$color-surface-primary;
+  }
+}
+
+.brandRowText {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-1;
+  min-width: 0;
+}
+
+.brandName {
+  font-family: t.$font-body;
+  font-size: clamp(0.9375rem, 1.2vw, 1.0625rem);
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-normal;
+  color: t.$color-text-primary;
+  transition: color t.$transition-fast;
+
+  @include m.truncate;
+}
+
+.brandDate {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  letter-spacing: t.$tracking-wide;
+  color: t.$color-text-muted;
+}
+
+// Inline circular swatches — slightly overlapped so a row reads as one object.
+.brandSwatches {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding-right: t.$space-1;
+}
+
+.brandSwatch {
+  display: block;
+  width: clamp(0.875rem, 1.4vw, 1.125rem);
+  height: clamp(0.875rem, 1.4vw, 1.125rem);
+  border-radius: t.$radius-full;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+
+  &:not(:first-child) {
+    margin-left: calc(-1 * t.$space-1);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Skeleton — shimmer rows mirror the loaded list shape while data is in flight.
+// ---------------------------------------------------------------------------
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-4;
+  padding: t.$space-3 t.$space-3;
+  border-bottom: 1px solid t.$color-border-subtle;
+}
+
+.skeletonBar {
+  display: block;
+  height: 0.75rem;
+  border-radius: t.$radius-sm;
+  background:
+    linear-gradient(
+      100deg,
+      rgba(255, 255, 255, 0.05) 35%,
+      rgba(255, 255, 255, 0.11) 50%,
+      rgba(255, 255, 255, 0.05) 65%
+    )
+    rgba(255, 255, 255, 0.04);
+  background-size: 220% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.skeletonBlock {
+  height: 1.125rem;
+  width: 62%;
+}
+
+.skeletonWide {
+  width: 84%;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonBar {
+    animation: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Detail — one sticky glass pane; the only elevated surface on the page.
+// Scrolls internally (`overflow-y: auto`) so expanded content never truncates
+// and never stretches the row beside it.
+// ---------------------------------------------------------------------------
+
+.detail {
+  grid-area: detail;
+  min-width: 0;
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    position: sticky;
+    top: calc(t.$header-height + t.$space-6);
+    max-height: calc(100vh - t.$header-height - t.$space-12);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+.detailPanel,
+.detailEmpty {
+  @include m.glass-surface;
+
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-4;
+  padding: clamp(t.$space-5, 2.5vw, t.$space-6);
+  border-radius: t.$radius-lg;
+  box-shadow: t.$glass-shadow;
+}
+
+.detailPanelSkeleton {
+  gap: t.$space-3;
+}
+
+.detailPanel {
+  animation: detail-enter 240ms t.$ease-out-quint both;
+}
+
+@keyframes detail-enter {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detailPanel {
+    animation: none;
+  }
+}
+
+.detailEyebrow {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+}
+
+.detailName {
+  font-family: t.$font-display;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: t.$font-weight-heading;
+  line-height: t.$line-height-tight;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+
+  overflow-wrap: anywhere;
+}
+
+.detailMeta {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  letter-spacing: t.$tracking-wide;
+  color: t.$color-text-secondary;
+  margin-top: calc(-1 * t.$space-3);
+}
+
+// Role-labelled swatch ledger — dot, role name, hex, one hairline per tone.
+.detailSwatches {
+  list-style: none;
+  margin: 0;
+  padding: t.$space-2 0 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.detailSwatchItem {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: t.$space-3;
+  padding: t.$space-2 0;
+  border-bottom: 1px solid t.$color-border-subtle;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.detailSwatchDot {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: t.$radius-full;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    t.$shadow-xs;
+}
+
+.detailSwatchRole {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-primary;
+}
+
+.detailHex {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  color: t.$color-text-muted;
+}
+
+.detailActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: t.$space-3;
+  padding-top: t.$space-2;
+}
+
+.detailPrimaryAction {
+  position: relative;
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: t.$space-3 t.$space-5;
+  border-radius: t.$radius-md;
+  border: 1px solid transparent;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-wide;
+  // Obsidian on ghost-white — white text fails against the silver fill.
+  color: #0a0a0b;
+  background: #f2f3f5;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    filter t.$transition-fast,
+    box-shadow t.$transition-fast;
+
+  &:hover {
+    filter: brightness(1.04);
+    box-shadow:
+      t.$shadow-sm,
+      0 0 20px rgba(242, 243, 245, 0.10);
+  }
+
+  &:active {
+    filter: brightness(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid t.$color-accent-cyan-hover;
+    outline-offset: 2px;
+  }
+
+  // Cursor-tracked graphite wash — shared spotlight system.
+  @include m.spotlight-fill($size: 140px);
+}
+
+.detailDangerAction {
+  flex: 0 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: t.$space-3 t.$space-5;
+  border-radius: t.$radius-md;
+  border: 1px solid t.$color-error-muted;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: t.$tracking-wide;
+  color: t.$color-error;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color t.$transition-fast,
+    border-color t.$transition-fast;
+
+  &:hover {
+    background-color: t.$color-error-muted;
+    border-color: t.$color-error;
+  }
+
+  &:active {
+    filter: brightness(0.92);
+  }
+
+  &:focus-visible {
+    outline: 2px solid t.$color-error;
+    outline-offset: 2px;
+  }
+}
+
+// Empty pane — explains what is missing and what to do next.
+.detailEmpty {
+  align-items: flex-start;
+}
+
+.detailEmptyIcon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: t.$radius-full;
+  border: 1px solid t.$color-border-default;
+  color: t.$color-text-secondary;
+}
+
+.detailEmptyTitle {
+  font-family: t.$font-body;
+  font-size: t.$font-size-h4;
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+}
+
+.detailEmptyText {
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 38ch;
+}
+
+// ---------------------------------------------------------------------------
+// Full-width body states — recoverable error and first-run empty library.
+// ---------------------------------------------------------------------------
+
+.statePanel,
+.emptyPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: t.$space-4;
+  margin-top: t.$space-10;
+  padding: clamp(t.$space-8, 6vw, t.$space-16) t.$space-6;
+  text-align: center;
+  max-width: 56ch;
+  margin-inline: auto;
+}
+
+.statePanelError .stateIcon {
+  color: t.$color-warning;
+}
+
+.emptyPanel {
+  border: 1px dashed t.$color-border-default;
+  border-radius: t.$radius-lg;
+}
+
+.stateIcon,
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: t.$radius-full;
+  border: 1px solid t.$color-border-default;
+  color: t.$color-text-secondary;
+}
+
+.emptyIcon {
+  color: t.$color-accent-primary-hover;
+}
+
+.stateTitle,
+.emptyTitle {
+  font-family: t.$font-body;
+  font-size: t.$font-size-h3;
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+}
+
+.stateDescription,
+.emptyDescription {
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+}
+
+.stateAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: t.$space-3 t.$space-5;
+  border-radius: t.$radius-md;
+  border: 1px solid t.$color-border-strong;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-wide;
+  color: t.$color-text-primary;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color t.$transition-fast,
+    border-color t.$transition-fast;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: t.$color-border-highlight;
+  }
+
+  &:focus-visible {
+    outline: 2px solid t.$color-accent-cyan-hover;
+    outline-offset: 2px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Library footer — quiet close under the split.
+// ---------------------------------------------------------------------------
+
+.libraryFooter {
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  margin-top: t.$space-6;
+  padding-top: t.$space-4;
+  border-top: 1px solid t.$color-border-subtle;
+  font-size: t.$font-size-xs;
+  letter-spacing: t.$tracking-wide;
+  color: t.$color-text-muted;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    margin-top: t.$space-8;
+  }
+}
+
+.libraryFooterAction {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-1;
+  margin-left: auto;
+  padding: t.$space-1 t.$space-2;
+  background: transparent;
+  border: none;
+  border-radius: t.$radius-sm;
+  font-family: t.$font-body;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: t.$tracking-wide;
+  color: t.$color-accent-cyan;
+  cursor: pointer;
+  transition: color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-accent-cyan-hover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid t.$color-accent-cyan-hover;
+    outline-offset: 2px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Delete confirmation — compact glass dialog body inside <Modal>.
+// ---------------------------------------------------------------------------
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-4;
+}
+
+.confirmIcon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: t.$radius-full;
+  border: 1px solid t.$color-warning-muted;
+  color: t.$color-warning;
+}
+
+.confirmText {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+}
+
+.confirmTitle {
+  font-family: t.$font-body;
+  font-size: t.$font-size-h4;
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+}
+
+.confirmDescription {
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: t.$space-3;
+  padding-top: t.$space-2;
+}
+
+.confirmCancel,
+.confirmDelete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: t.$space-2 t.$space-4;
+  border-radius: t.$radius-md;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-wide;
+  cursor: pointer;
+  transition:
+    background-color t.$transition-fast,
+    border-color t.$transition-fast,
+    opacity t.$transition-fast;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid t.$color-accent-cyan-hover;
+    outline-offset: 2px;
+  }
+}
+
+.confirmCancel {
+  border: 1px solid t.$color-border-default;
+  color: t.$color-text-primary;
+  background: transparent;
+
+  &:not(:disabled):hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: t.$color-border-strong;
+  }
+}
+
+.confirmDelete {
+  border: 1px solid transparent;
+  color: #fff;
+  background: t.$color-error;
+
+  &:not(:disabled):hover {
+    background-color: #dc2626;
+  }
+}

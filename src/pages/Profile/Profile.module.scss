@@ -1,0 +1,1164 @@
+// ============================================================================
+// Profile.module.scss
+// ChromaForge "Mi Perfil" — Internal Sidebar Layout
+// Consumes design tokens from src/styles/_tokens.scss
+//
+// Desktop (lg+): a 25% / 75% internal sidebar layout — a vertical tab column
+// (sticky under the header) beside the content column. Below lg the same
+// tablist collapses into a top horizontal scrollable strip. The composition
+// extends the library surface world: glass cards with gradient hairlines,
+// mono eyebrows, accent tokens, and entrances that only touch
+// transform/opacity (GPU-composited).
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+// ---------------------------------------------------------------------------
+// Profile Section
+// ---------------------------------------------------------------------------
+
+.profile {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+}
+
+// Faint atmospheric wash + dot field — quieter than the Home hero; settings
+// stay calm. Silver washes plus a barely-visible dot matrix, all static.
+.background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(232, 234, 237, 0.045) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 14% 0%,
+      rgba(232, 234, 237, 0.06) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 40% 38% at 90% 6%,
+      rgba(110, 116, 128, 0.05) 0%,
+      transparent 55%
+    );
+  background-size:
+    26px 26px,
+    auto,
+    auto;
+}
+
+// ---------------------------------------------------------------------------
+// Container
+// ---------------------------------------------------------------------------
+
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: t.$breakpoint-2xl;
+  margin: 0 auto;
+  padding: clamp(1rem, 2vw, 1.5rem) clamp(1.25rem, 4vw, 3rem)
+    clamp(3rem, 6vw, 5rem);
+}
+
+// ---------------------------------------------------------------------------
+// Page Header — entrance cascade (delays 0 / 60 / 120ms)
+// ---------------------------------------------------------------------------
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: t.$space-2;
+  margin-bottom: t.$space-8;
+}
+
+.pageEyebrow {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+
+  opacity: 0;
+  translate: 0 8px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 340ms t.$ease-out-quint,
+      translate 340ms t.$ease-out-quint;
+    transition-delay: 0ms;
+  }
+}
+
+.pageTitle {
+  font-family: t.$font-body;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+
+  opacity: 0;
+  translate: 0 8px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 340ms t.$ease-out-quint,
+      translate 340ms t.$ease-out-quint;
+    transition-delay: 60ms;
+  }
+}
+
+.pageDescription {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 56ch;
+
+  opacity: 0;
+  translate: 0 8px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 340ms t.$ease-out-quint,
+      translate 340ms t.$ease-out-quint;
+    transition-delay: 120ms;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Internal Sidebar Layout — 1fr → 1fr 3fr (25% / 75%) on lg+
+// ---------------------------------------------------------------------------
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: t.$space-6;
+  align-items: start;
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+    gap: clamp(1.5rem, 3vw, 3rem);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sidebar — vertical tab column (lg+) / horizontal scroll strip (< lg)
+// ---------------------------------------------------------------------------
+
+.sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: t.$space-2;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  // Mobile strip hairline — the tabs sit on a quiet underline.
+  padding-bottom: t.$space-2;
+  border-bottom: 1px solid t.$color-border-subtle;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: t.$space-2;
+    overflow: visible;
+    padding: t.$space-2;
+    border: 1px solid t.$glass-border;
+    border-radius: t.$radius-xl;
+    background: t.$glass-bg;
+    backdrop-filter: blur(t.$glass-blur);
+    -webkit-backdrop-filter: blur(t.$glass-blur);
+    box-shadow: t.$shadow-sm;
+
+    // Keep the section list in view while the content column scrolls.
+    position: sticky;
+    top: calc(t.$header-height + 1.5rem);
+  }
+}
+
+.sidebarTab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-3;
+  flex: 0 0 auto;
+  padding: t.$space-3 t.$space-4;
+  font-family: t.$font-body;
+  color: t.$color-text-secondary;
+  background: transparent;
+  border: none;
+  border-radius: t.$radius-md;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: left;
+  transition:
+    color t.$transition-fast,
+    background-color t.$transition-smooth;
+
+  &:hover {
+    color: t.$color-text-primary;
+  }
+
+  @include m.focus-ring;
+
+  // Active indicator — bottom underline on the mobile strip…
+  &::after {
+    content: '';
+    position: absolute;
+    left: t.$space-4;
+    right: t.$space-4;
+    bottom: -#{t.$space-2};
+    height: 2px;
+    border-radius: t.$radius-full;
+    background: t.$gradient-primary;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform t.$transition-smooth;
+  }
+
+  // …and a leading gradient bar on the desktop sidebar.
+  @include m.respond-to(t.$breakpoint-lg) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: t.$space-1;
+    width: 100%;
+    padding: t.$space-3 t.$space-4;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 18%;
+      bottom: 18%;
+      width: 2px;
+      border-radius: t.$radius-full;
+      background: t.$gradient-primary;
+      transform: scaleY(0);
+      transform-origin: center top;
+      transition: transform t.$transition-smooth;
+    }
+
+    &::after {
+      content: none;
+    }
+  }
+}
+
+.sidebarTabActive {
+  color: t.$color-text-primary;
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    background: t.$glass-bg-strong;
+
+    &::before {
+      transform: scaleY(1);
+    }
+  }
+
+  &::after {
+    transform: scaleX(1);
+  }
+}
+
+.sidebarTabIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: t.$color-text-muted;
+  transition: color t.$transition-fast;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .sidebarTabActive & {
+    color: t.$color-accent-primary;
+  }
+}
+
+.sidebarTabText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sidebarTabLabel {
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-tight;
+  color: inherit;
+}
+
+.sidebarTabDescription {
+  display: none;
+  font-size: t.$font-size-xs;
+  line-height: t.$line-height-snug;
+  color: t.$color-text-muted;
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    display: block;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Content Column — active section inside glass cards
+// ---------------------------------------------------------------------------
+
+.content {
+  min-width: 0;
+}
+
+// Panel entrance — the section is born hidden and rises in whenever the tab
+// changes (useEntrance keyed by the active tab, StrictMode-safe). The cards
+// inside inherit this single authored moment.
+.panel {
+  min-width: 0;
+  opacity: 0;
+  translate: 0 12px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 280ms t.$ease-out-quart,
+      translate 280ms t.$ease-out-quart;
+  }
+}
+
+.tabStack {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-6;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    gap: t.$space-8;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Glass Card — the content container (extends the library surface world)
+// ---------------------------------------------------------------------------
+
+.card {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 46rem;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  background: t.$glass-bg;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-xl;
+  backdrop-filter: blur(t.$glass-blur);
+  -webkit-backdrop-filter: blur(t.$glass-blur);
+  box-shadow: t.$shadow-lg;
+  overflow: hidden;
+
+  // Silver hairline along the top edge — echoes the featured hero card.
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(232, 234, 237, 0.4),
+      rgba(185, 189, 199, 0.32),
+      transparent
+    );
+    pointer-events: none;
+  }
+}
+
+// Danger card — the hairline and border tint toward error without shouting.
+.cardDanger {
+  border-color: rgba(239, 68, 68, 0.22);
+
+  &::after {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(239, 68, 68, 0.45),
+      rgba(245, 158, 11, 0.25),
+      transparent
+    );
+  }
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+  margin-bottom: t.$space-6;
+}
+
+.cardEyebrow {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+}
+
+.cardTitle {
+  font-family: t.$font-body;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+}
+
+.cardDescription {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 56ch;
+}
+
+// ---------------------------------------------------------------------------
+// Forms — the design system's field language (mirrors the auth card)
+// ---------------------------------------------------------------------------
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-5;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+}
+
+.label {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+}
+
+.inputWrap {
+  position: relative;
+}
+
+.inputIcon {
+  position: absolute;
+  top: 50%;
+  left: t.$space-3;
+  transform: translateY(-50%);
+  display: flex;
+  color: t.$color-text-muted;
+  pointer-events: none;
+
+  svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.input {
+  width: 100%;
+  padding: t.$space-3 t.$space-4;
+  padding-left: t.$space-10;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  color: t.$color-text-primary;
+  background: t.$color-bg-interactive;
+  border: 1px solid t.$color-border-subtle;
+  border-radius: t.$radius-md;
+  outline: none;
+  transition:
+    border-color t.$transition-fast,
+    background-color t.$transition-fast,
+    box-shadow t.$transition-fast;
+
+  &::placeholder {
+    color: t.$color-text-secondary;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: t.$color-border-default;
+  }
+
+  // Visible focus on all focus (keyboard and pointer) — a text field's
+  // current field is worth seeing.
+  &:focus {
+    border-color: t.$color-accent-primary;
+    background: t.$color-bg-elevated;
+    box-shadow: 0 0 0 3px rgba(185, 189, 199, 0.22);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+// Locked field — the read-only email. Muted, attenuated, clearly inert.
+.inputLocked {
+  padding-right: t.$space-10;
+  color: t.$color-text-muted;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed t.$color-border-default;
+  opacity: 1;
+  cursor: not-allowed;
+
+  &:hover {
+    border-color: t.$color-border-default;
+  }
+
+  &:focus {
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow: none;
+  }
+}
+
+// Padlock badge — sits inside the locked input, quiet and non-interactive.
+.lockBadge {
+  position: absolute;
+  top: 50%;
+  right: t.$space-3;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: t.$color-text-muted;
+  pointer-events: none;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.fieldHint {
+  display: flex;
+  align-items: center;
+  gap: t.$space-2;
+  font-size: t.$font-size-xs;
+  line-height: t.$line-height-snug;
+  color: t.$color-text-secondary;
+
+  svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+  }
+}
+
+.fieldError {
+  font-size: t.$font-size-xs;
+  line-height: t.$line-height-snug;
+  color: t.$color-error;
+}
+
+.inputWrapInvalid {
+  .input {
+    border-color: t.$color-error;
+  }
+
+  .input:focus {
+    border-color: t.$color-error;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.22);
+  }
+}
+
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: t.$space-3;
+  margin-top: t.$space-2;
+
+  @include m.respond-to(t.$breakpoint-sm) {
+    justify-content: flex-end;
+  }
+}
+
+// Primary action — obsidian on ghost-white. White text would sink into the
+// silver fill. Cursor-tracked graphite wash via the shared spotlight system;
+// the AsyncButton morph (width-locked text→spinner swap) is the loading
+// interaction, so no second motion competes with it.
+.saveButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-3 t.$space-5;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: #0a0a0b;
+  background: #f2f3f5;
+  border: none;
+  border-radius: t.$radius-md;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  box-shadow: t.$shadow-sm;
+  transition:
+    transform t.$transition-premium,
+    box-shadow t.$transition-smooth,
+    opacity t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow:
+      t.$shadow-md,
+      0 0 24px rgba(242, 243, 245, 0.10);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0) scale(0.99);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  @include m.focus-ring;
+  @include m.spotlight-fill;
+}
+
+// Visibility toggle inside password fields.
+.eyeToggle {
+  position: absolute;
+  top: 50%;
+  right: t.$space-2;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  color: t.$color-text-muted;
+  background: transparent;
+  border: none;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  transition:
+    color t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    color: t.$color-text-primary;
+    background: t.$color-bg-interactive;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  @include m.focus-ring;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.securityNote {
+  display: flex;
+  align-items: flex-start;
+  gap: t.$space-2;
+  font-size: t.$font-size-xs;
+  line-height: t.$line-height-snug;
+  color: t.$color-text-secondary;
+  max-width: 48ch;
+
+  svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Avatar — preview ring, upload, cropper
+// ---------------------------------------------------------------------------
+
+.visuallyHidden {
+  @include m.sr-only;
+}
+
+.avatarLayout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: t.$space-5;
+
+  @include m.respond-to(t.$breakpoint-sm) {
+    flex-direction: row;
+    align-items: center;
+    gap: t.$space-6;
+  }
+}
+
+.avatarPreview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  padding: 3px;
+  border-radius: t.$radius-full;
+  background: t.$gradient-primary;
+  box-shadow: t.$shadow-sm;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  border-radius: t.$radius-full;
+  object-fit: cover;
+  background: t.$color-bg-primary;
+}
+
+.avatarInitials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: t.$radius-full;
+  font-family: t.$font-display;
+  font-size: 1.75rem;
+  font-weight: t.$font-weight-bold;
+  color: t.$color-text-primary;
+  background: t.$color-bg-primary;
+}
+
+.avatarControls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: t.$space-3;
+  flex: 1;
+  min-width: 0;
+}
+
+.avatarActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: t.$space-3;
+}
+
+.avatarHint {
+  font-size: t.$font-size-xs;
+  line-height: t.$line-height-snug;
+  color: t.$color-text-secondary;
+}
+
+.avatarButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-2 t.$space-4;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: t.$color-accent-primary;
+  background: rgba(232, 234, 237, 0.08);
+  border: 1px solid rgba(232, 234, 237, 0.25);
+  border-radius: t.$radius-md;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color t.$transition-fast,
+    background-color t.$transition-fast,
+    border-color t.$transition-fast,
+    transform t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    color: t.$color-accent-primary-hover;
+    background: rgba(232, 234, 237, 0.14);
+    border-color: rgba(232, 234, 237, 0.4);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  @include m.focus-ring;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-2 t.$space-4;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  background: transparent;
+  border: 1px solid t.$color-border-subtle;
+  border-radius: t.$radius-md;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color t.$transition-fast,
+    border-color t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    color: t.$color-text-primary;
+    border-color: t.$color-border-default;
+    background-color: t.$color-bg-interactive;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  @include m.focus-ring;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.removeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-2 t.$space-4;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-error;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  border-radius: t.$radius-md;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color t.$transition-fast,
+    background-color t.$transition-fast,
+    border-color t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    color: t.$color-error;
+    background: t.$color-error-muted;
+    border-color: rgba(239, 68, 68, 0.42);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  @include m.focus-ring;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.cropperStage {
+  position: relative;
+  width: 100%;
+  max-width: 22rem;
+  height: 220px;
+  overflow: hidden;
+  border-radius: t.$radius-lg;
+  border: 1px solid t.$color-border-subtle;
+}
+
+.zoomRow {
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  width: 100%;
+  max-width: 22rem;
+  color: t.$color-text-muted;
+
+  svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
+}
+
+.zoomSlider {
+  flex: 1;
+  accent-color: t.$color-accent-primary;
+  cursor: pointer;
+}
+
+.cropPrimary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-2 t.$space-4;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  // Obsidian on ghost-white — white text would sink into the silver fill.
+  color: #0a0a0b;
+  background: #f2f3f5;
+  border: none;
+  border-radius: t.$radius-md;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  box-shadow: t.$shadow-sm;
+  transition:
+    transform t.$transition-premium,
+    box-shadow t.$transition-smooth,
+    opacity t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: t.$shadow-md;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  @include m.focus-ring;
+  @include m.spotlight-fill($size: 140px);
+}
+
+// ---------------------------------------------------------------------------
+// Danger Zone
+// ---------------------------------------------------------------------------
+
+.dangerBox {
+  display: flex;
+  align-items: flex-start;
+  gap: t.$space-3;
+  padding: t.$space-4;
+  background: t.$color-error-muted;
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  border-radius: t.$radius-lg;
+}
+
+.dangerBoxIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: t.$color-error;
+}
+
+.dangerBoxText {
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 48ch;
+}
+
+.dangerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-2 t.$space-5;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: white;
+  background: t.$color-error;
+  border: none;
+  border-radius: t.$radius-md;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: t.$shadow-sm;
+  transition:
+    filter t.$transition-fast,
+    box-shadow t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.94);
+    box-shadow: t.$shadow-md;
+  }
+
+  &:active:not(:disabled) {
+    filter: brightness(0.88);
+  }
+
+  @include m.focus-ring;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Delete Confirmation Modal Body
+// ---------------------------------------------------------------------------
+
+.dangerModal {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.dangerModalIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: t.$radius-md;
+  color: t.$color-error;
+  background: t.$color-error-muted;
+  border: 1px solid rgba(239, 68, 68, 0.32);
+}
+
+.dangerCopy {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+}
+
+.dangerTitle {
+  font-family: t.$font-body;
+  font-size: t.$font-size-body-lg;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+}
+
+.dangerDescription {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 52ch;
+}
+
+.confirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: t.$space-3;
+  margin-top: t.$space-2;
+
+  @include m.respond-to(t.$breakpoint-sm) {
+    justify-content: flex-end;
+  }
+}
+
+.confirmCancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-2 t.$space-5;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: t.$color-text-primary;
+  background: transparent;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color t.$transition-fast,
+    border-color t.$transition-fast,
+    color t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    background: t.$color-bg-interactive;
+    border-color: t.$glass-border-highlight;
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.7;
+  }
+
+  @include m.focus-ring;
+}
+
+.confirmDelete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-2 t.$space-5;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: white;
+  background: t.$color-error;
+  border: none;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: t.$shadow-sm;
+  transition:
+    filter t.$transition-fast,
+    box-shadow t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.94);
+    box-shadow: t.$shadow-md;
+  }
+
+  &:active:not(:disabled) {
+    filter: brightness(0.88);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  @include m.focus-ring;
+}

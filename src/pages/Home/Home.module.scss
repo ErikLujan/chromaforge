@@ -1,0 +1,287 @@
+// ============================================================================
+// Home.module.scss
+// ChromaForge Premium Static Gradient Light Hero Experience
+// Consumes design tokens from src/styles/_tokens.scss
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+// ---------------------------------------------------------------------------
+// Hero — Full Viewport Section
+//
+// Layout contract:
+//   - min-height: calc(100dvh - $header-height) makes the hero a true full-view
+//     stage below the sticky in-flow header (which owns its own 64px band).
+//   - flex: 1 keeps the section growing to fill any remaining `main` space on
+//     short viewports while the footer stays pinned by the column shell.
+//   - The light layer lives INSIDE this section as an absolute element
+//     (inset: 0) — nothing is fixed, portaled, blurred, or animated.
+//   - pointer events stay enabled: the light layer is pointer-transparent
+//     itself, so the fold and its CTAs are fully interactive and selectable.
+//   - z-index: 0 + isolation: isolate keeps every hero-internal stacking layer
+//     (light 0, text 10) below the Header tokens
+//     ($z-sticky: 200, $z-overlay: 300, $z-modal: 400).
+// ---------------------------------------------------------------------------
+
+.hero {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  width: 100%;
+  flex: 1;
+  min-height: calc(100dvh - t.$header-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  overflow: clip;
+  overflow-clip-margin: content-box;
+}
+
+// ---------------------------------------------------------------------------
+// Bg — Home-owned animated aurora host (independent from Splash)
+// ---------------------------------------------------------------------------
+// OWN-WORLD: obsidian base ($color-bg-primary) + the AuroraField canvas.
+// All motion lives INSIDE the canvas (low-res 2D fills, adaptive 60→30fps,
+// paused off-screen). This SCSS paints zero animations itself — no keyframes,
+// no infinite loops — so the compositor has nothing to re-paint. Splash owns
+// a separate STATIC radial wash; the two surfaces share no class or keyframe.
+// The canvas loops continuously for every visitor.
+
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: t.$color-bg-primary;
+}
+
+// ---------------------------------------------------------------------------
+// Container — Floating Text Overlay
+// Positioned above the light layer (z-index: 10) and centered perfectly. Fully
+// interactive — the light behind it is pointer-transparent, so the text and
+// controls work normally.
+// ---------------------------------------------------------------------------
+
+.container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: t.$breakpoint-2xl;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 5rem) clamp(1.25rem, 4vw, 3rem);
+}
+
+// ---------------------------------------------------------------------------
+// Text Block — headline and description
+// ---------------------------------------------------------------------------
+
+.text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(0.875rem, 1.5vw, 1.25rem);
+  max-width: 600px;
+  margin-inline: auto;
+}
+
+// --- Headline ---
+// Restrained and elegant: the light field carries the atmosphere, so the type
+// stays a single balanced line on the fold.
+
+.headline {
+  font-family: t.$font-display;
+  font-size: clamp(2rem, 3.5vw, 3.5rem);
+  font-weight: t.$font-weight-display;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  color: t.$color-text-primary;
+  text-wrap: balance;
+}
+
+// --- Accent phrase — the world's hairline grammar, not gradient text ---
+// A 2px gradient hairline sits under the emphasized phrase, echoing the 36px
+// gradient hairline that opens headings across the system.
+
+.accentText {
+  position: relative;
+  font-style: italic;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.06em;
+    height: 2px;
+    border-radius: 2px;
+    background: t.$gradient-primary;
+    opacity: 0.85;
+  }
+}
+
+// --- Description ---
+
+.description {
+  font-family: t.$font-body;
+  font-size: clamp(0.9rem, 1.25vw, 1.0625rem);
+  font-weight: t.$font-weight-regular;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 44ch;
+}
+
+// ---------------------------------------------------------------------------
+// CTA Group — Primary and Secondary Actions
+// ---------------------------------------------------------------------------
+
+.ctaGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-3;
+}
+
+// --- Loading placeholders — dimension-matched skeleton pair ---
+// Rendered only while the persisted session is being restored, so a returning
+// user never sees the guest CTA labels flash by before the correct pair lands.
+
+.ctaPlaceholder {
+  display: inline-block;
+  height: 40px;
+  width: 170px;
+  border-radius: t.$radius-sm;
+  background: t.$color-bg-interactive;
+  animation: ctaPulse 1.6s t.$ease-standard infinite;
+
+  &:last-child {
+    width: 148px;
+  }
+
+  @include m.reduced-motion {
+    animation: none;
+  }
+}
+
+@keyframes ctaPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.primaryCta {
+  --spot-x: 50%;
+  --spot-y: 50%;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-3 t.$space-6;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  // Tactical Monochrome statement: inverted ghost-white slab, obsidian text.
+  // The highest-contrast element on the fold — authority via discipline.
+  color: #0a0a0b;
+  background: #f2f3f5;
+  border: none;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform t.$transition-premium,
+    box-shadow t.$transition-smooth,
+    background-color t.$transition-fast;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    // Re-assert obsidian over the global `a:hover` accent rule (see note
+    // below on the previous gradient implementation).
+    color: #0a0a0b;
+    transform: translateY(-2px) scale(1.01);
+    box-shadow:
+      0 12px 30px rgba(0, 0, 0, 0.35),
+      0 0 24px rgba(242, 243, 245, 0.12);
+  }
+
+  &:active {
+    color: #0a0a0b;
+    transform: translateY(0) scale(0.99);
+  }
+
+  @include m.focus-ring;
+  // Spotlight fill — shared mixin (graphite wash tracking the cursor).
+  @include m.spotlight-fill;
+
+  // Highlight sweep on hover (moved to ::after to share the surface with
+  // the spotlight layer above).
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 30%,
+      rgba(10, 10, 11, 0.08) 50%,
+      transparent 70%
+    );
+    transform: translateX(-100%);
+    pointer-events: none;
+    transition: transform 0.6s t.$ease-out-expo;
+  }
+
+  &:hover::after {
+    transform: translateX(100%);
+  }
+}
+
+.secondaryCta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-3 t.$space-6;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  background: transparent;
+  border: 1px solid t.$color-border-default;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  transition:
+    transform t.$transition-fast,
+    color t.$transition-fast,
+    border-color t.$transition-fast,
+    background-color t.$transition-fast;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    color: t.$color-text-primary;
+    border-color: t.$color-border-strong;
+    background-color: t.$color-bg-interactive;
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.99);
+  }
+
+  @include m.focus-ring;
+
+  // Border-light — shared mixin (silver segment tracking the cursor along
+  // the hairline). The plain border-color shift above stays as the fallback
+  // where mask-composite is unsupported.
+  @include m.spotlight-ring;
+}

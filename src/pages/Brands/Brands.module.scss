@@ -1,0 +1,608 @@
+// ============================================================================
+// Brands.module.scss
+// ChromaForge Brand Library — `tus identidades` card grid
+// Consumes design tokens from src/styles/_tokens.scss
+//
+// Extends the Dashboard's visual world (glass cards, gradient hairline,
+// spotlight hover, mono metadata) into a calm library grid: 1 column on
+// mobile, 2 on tablet, 3 on desktop, 4 on wide screens. Hover lifts and the
+// stagger entrance only touch transform/opacity, so everything is composited
+// on the GPU.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+@use 'sass:math';
+
+// ---------------------------------------------------------------------------
+// Brands Section
+// ---------------------------------------------------------------------------
+
+.brands {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+}
+
+// Faint atmospheric wash + dot field — quieter than the Home hero; the
+// library stays calm. Silver washes plus a barely-visible dot matrix.
+.background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(232, 234, 237, 0.045) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 12% 0%,
+      rgba(232, 234, 237, 0.06) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 42% 40% at 92% 8%,
+      rgba(110, 116, 128, 0.05) 0%,
+      transparent 55%
+    );
+  background-size:
+    26px 26px,
+    auto,
+    auto;
+}
+
+// ---------------------------------------------------------------------------
+// Container — centers content, constrains width
+// ---------------------------------------------------------------------------
+
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: t.$breakpoint-2xl;
+  margin: 0 auto;
+  padding: clamp(1rem, 2vw, 1.5rem) clamp(1.25rem, 4vw, 3rem)
+    clamp(3rem, 6vw, 5rem);
+}
+
+// ---------------------------------------------------------------------------
+// Page Header — compact library introduction
+// ---------------------------------------------------------------------------
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: t.$space-5;
+  margin-bottom: t.$space-8;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: t.$space-8;
+    margin-bottom: t.$space-10;
+  }
+}
+
+.pageHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+  max-width: 60ch;
+}
+
+.pageEyebrow {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+
+  // Hidden start — the page header cascade is driven by a single page-level
+  // `useEntrance` call (StrictMode-safe) so the eyebrow, title, description
+  // and action rise in as one graceful, painted sequence.
+  opacity: 0;
+  translate: 0 8px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 340ms t.$ease-out-quint,
+      translate 340ms t.$ease-out-quint;
+    transition-delay: 0ms;
+  }
+}
+
+.pageTitle {
+  font-family: t.$font-body;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+
+  opacity: 0;
+  translate: 0 8px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 340ms t.$ease-out-quint,
+      translate 340ms t.$ease-out-quint;
+    transition-delay: 60ms;
+  }
+}
+
+.pageDescription {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 56ch;
+
+  opacity: 0;
+  translate: 0 8px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 340ms t.$ease-out-quint,
+      translate 340ms t.$ease-out-quint;
+    transition-delay: 120ms;
+  }
+}
+
+// --- Primary action — obsidian on ghost-white with cursor spotlight ---
+// White text would sink into the silver fill; the shared spotlight system
+// carries the hover life, so no second motion is layered on.
+
+.primaryAction {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-3 t.$space-6;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: #0a0a0b;
+  background: #f2f3f5;
+  border: none;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  transition:
+    transform t.$transition-premium,
+    box-shadow t.$transition-smooth;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      t.$shadow-md,
+      0 0 24px rgba(242, 243, 245, 0.10);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.99);
+  }
+
+  @include m.focus-ring;
+  @include m.spotlight-fill;
+
+  // Entrance — uses `translate` (composes with the hover `transform` above),
+  // with its own delay so it lands last in the header cascade.
+  opacity: 0;
+  translate: 0 8px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 340ms t.$ease-out-quint,
+      translate 340ms t.$ease-out-quint,
+      transform t.$transition-premium,
+      box-shadow t.$transition-smooth;
+    transition-delay: 180ms, 180ms, 0ms, 0ms;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Library Count — mono metadata line above the grid
+// ---------------------------------------------------------------------------
+
+.libraryCount {
+  display: flex;
+  align-items: center;
+  gap: t.$space-2;
+  margin-bottom: t.$space-5;
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: t.$color-text-secondary;
+}
+
+// ---------------------------------------------------------------------------
+// Card Grid — responsive library
+//
+// Mobile-first: one column. Tablet (md): two. Desktop (lg): three. Wide
+// screens (xl): four. Cards are the neutral `square` variant, so the grid owns
+// every track; card spans never apply here.
+// ---------------------------------------------------------------------------
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: t.$space-4;
+
+  @include m.respond-to(t.$breakpoint-md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: t.$space-5;
+  }
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @include m.respond-to(t.$breakpoint-xl) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: t.$space-6;
+  }
+
+  // Prevent grid blowout — items may never exceed their track.
+  > * {
+    min-width: 0;
+  }
+}
+
+// Staggered entrance — one authored moment across the whole grid. Each card
+// consumes the delay through `--entrance-delay` in its own entered-state
+// transition (PaletteCard reads the custom property), so the stagger is
+// applied only to the entrance and never to hover interactions.
+//
+// Choreography: a decaying cascade. Gaps start at 55ms and shrink ~5ms per
+// step (0, 55, 105, 150, 190, 225, 255…), so the wave travels fast at first
+// and settles as it crosses the grid — organic, never metronomic — and the
+// tail stays bounded for long libraries (12th card ≈ 330ms).
+@for $i from 1 through 12 {
+  .grid > :nth-child(#{$i}) {
+    --entrance-delay: #{55 * ($i - 1) - math.div(5 * ($i - 2) * ($i - 1), 2)}ms;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Delete Action — quiet corner trigger over the glass card
+//
+// Sits in the card's top-right corner (positioned by PaletteCard's action
+// slot). A faint surface at rest; error-tinted on hover so the destructive
+// nature reads before the click, never after.
+// ---------------------------------------------------------------------------
+
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: t.$color-text-secondary;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid t.$color-border-subtle;
+  border-radius: t.$radius-md;
+  cursor: pointer;
+  transition:
+    color t.$transition-fast,
+    background-color t.$transition-fast,
+    border-color t.$transition-fast,
+    transform t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    color: t.$color-error;
+    background: t.$color-error-muted;
+    border-color: rgba(239, 68, 68, 0.32);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.7;
+  }
+
+  @include m.focus-ring;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.deleteButtonBusy svg {
+  animation: deleteSpin 0.8s linear infinite;
+}
+
+@keyframes deleteSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Delete Confirmation — bespoke glass dialog body (no native confirm)
+//
+// A red-tinted icon tile names the destructive nature, the verbatim question
+// asks for certainty, and the two actions separate the safe exit ("Cancelar")
+// from the destructive one ("Eliminar", solid error surface).
+// ---------------------------------------------------------------------------
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.confirmIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: t.$radius-md;
+  color: t.$color-error;
+  background: t.$color-error-muted;
+  border: 1px solid rgba(239, 68, 68, 0.32);
+}
+
+.confirmText {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+}
+
+.confirmTitle {
+  font-family: t.$font-body;
+  font-size: t.$font-size-body-lg;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+}
+
+.confirmDescription {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 52ch;
+}
+
+.confirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: t.$space-3;
+  margin-top: t.$space-2;
+
+  @include m.respond-to(t.$breakpoint-sm) {
+    justify-content: flex-end;
+  }
+}
+
+.confirmCancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-2 t.$space-5;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: t.$color-text-primary;
+  background: transparent;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color t.$transition-fast,
+    border-color t.$transition-fast,
+    color t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    background: t.$color-bg-interactive;
+    border-color: t.$glass-border-highlight;
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.7;
+  }
+
+  @include m.focus-ring;
+}
+
+.confirmDelete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-2 t.$space-5;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: white;
+  background: t.$color-error;
+  border: none;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: t.$shadow-sm;
+  transition:
+    filter t.$transition-fast,
+    box-shadow t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.94);
+    box-shadow: t.$shadow-md;
+  }
+
+  &:active:not(:disabled) {
+    filter: brightness(0.88);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.7;
+  }
+
+  @include m.focus-ring;
+}
+
+// ---------------------------------------------------------------------------
+// State Panels — empty & error first-run surfaces
+// A single calm glass panel: hairline border, gradient hairline on top, one
+// authored entrance. The empty surface invites the first questionnaire; the
+// error surface names the problem and offers a recovery.
+// ---------------------------------------------------------------------------
+
+.statePanel {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: t.$space-4;
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) clamp(1.5rem, 4vw, 3rem);
+  background: t.$glass-bg;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-xl;
+  backdrop-filter: blur(t.$glass-blur);
+  -webkit-backdrop-filter: blur(t.$glass-blur);
+  box-shadow: t.$shadow-lg;
+  overflow: hidden;
+
+  // Hidden start — the panel is toggled into the entered state together with
+  // the grid (same `useEntrance` call keyed by the body data state), so the
+  // empty/error surface rises in as one authored moment instead of mounting
+  // with a mount-time keyframe that Strict Mode can skip.
+  opacity: 0;
+  translate: 0 16px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity t.$duration-slow t.$ease-out-quint,
+      translate t.$duration-slow t.$ease-out-quint;
+  }
+
+  // Silver hairline along the top edge — echoes the featured hero card.
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(232, 234, 237, 0.4),
+      rgba(185, 189, 199, 0.32),
+      transparent
+    );
+    pointer-events: none;
+  }
+}
+
+.stateIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: t.$radius-md;
+  color: t.$color-accent-primary;
+  background: rgba(232, 234, 237, 0.08);
+  border: 1px solid rgba(232, 234, 237, 0.25);
+}
+
+.statePanelError .stateIcon {
+  color: t.$color-error;
+  background: t.$color-error-muted;
+  border-color: rgba(239, 68, 68, 0.32);
+}
+
+.stateEyebrow {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+}
+
+.stateTitle {
+  font-family: t.$font-body;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+}
+
+.stateDescription {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 52ch;
+}
+
+.stateAction {
+  @extend .primaryAction;
+}
+
+// ---------------------------------------------------------------------------
+// Skeleton — loading state that mirrors the loaded grid shape
+// So the state swap is a position-stable fade, never a layout jump.
+// ---------------------------------------------------------------------------
+
+.skeletonBars {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: t.$space-2;
+  flex: 1;
+}
+
+.skeletonBar {
+  display: block;
+  height: 12px;
+  border-radius: t.$radius-sm;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.6s linear infinite;
+}
+
+@keyframes skeletonShimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}

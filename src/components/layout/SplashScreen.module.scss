@@ -1,0 +1,167 @@
+// ============================================================================
+// ChromaForge Splash Screen — Ultra-Minimalist Boot Veil
+// Pure Deep Obsidian ground, a living brand mark (levitation + breathe) at
+// center, and a fluid simulated progress bar as the only meter. No
+// gradients, no nodes, no ambient washes. Motion is GPU-only (opacity +
+// transform) and runs unconditionally — this one-time veil never parks its
+// loops under reduced motion (see header comment in SplashScreen.tsx).
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+
+// ---------------------------------------------------------------------------
+// Veil — fixed full-screen overlay above every layer including toasts
+// ---------------------------------------------------------------------------
+
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: t.$z-splash;
+  // Strict, single-axis Flexbox centering with an optical nudge: the column
+  // sits 2vh above geometric center so the mark reads as centered against
+  // the trace below it rather than against the viewport math. `min-height:
+  // 100dvh` keeps the stage correct on mobile browsers whose URL chrome
+  // changes the visible area.
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  gap: t.$space-8;
+  padding: 0 0 2vh;
+  overflow: hidden;
+  background: t.$color-bg-primary;
+  // No entrance animation on the veil itself: it must be fully opaque from
+  // the very first committed paint or the app content flashes beneath it
+  // (FOUC). Only the inner content breathes; the exit uses a transition so
+  // the cascade can never be held by a keyframe fill.
+  opacity: 1;
+  transition:
+    opacity 450ms t.$ease-out-quart,
+    transform 450ms t.$ease-out-quart;
+  will-change: transform, opacity;
+
+  // Exit — fade + slight upward drift, triggered from JS at ~3s.
+  &.splashExit {
+    opacity: 0;
+    transform: translateY(-16px) scale(1.015);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mark — the living seal: levitation + breathe in composite
+// ---------------------------------------------------------------------------
+// Feathered circular mask dissolves the PNG tile's baked rim into the
+// obsidian ground — no hard circular edge can survive the falloff, so the
+// geometry floats clean with zero border, ring, or halo.
+//
+// Two loops on mismatched periods (3.4s float on the wrapper, 2.6s breathe
+// on the mark itself) compose into an organic, never-quite-repeating
+// levitation — magnetic, not frozen. Split across elements deliberately: two
+// animations driving `transform` on the SAME element would clobber each
+// other (last wins), so float owns the wrapper and breathe owns the image.
+
+.markWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: mark-float 3.4s ease-in-out infinite;
+}
+
+.mark {
+  width: 72px;
+  height: 72px;
+  display: block;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  -webkit-mask-image: radial-gradient(circle, black 82%, transparent 96%);
+  mask-image: radial-gradient(circle, black 82%, transparent 96%);
+  animation: mark-breathe 2.6s t.$ease-standard infinite;
+}
+
+@keyframes mark-float {
+  0%,
+  100% {
+    transform: translateY(3px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes mark-breathe {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scale(0.995);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Trace — fluid simulated progress fill, the veil's only meter
+// ---------------------------------------------------------------------------
+// A 2px silver track filled 0 → 100% over exactly the veil's 3s visible
+// life, so completion lands precisely as the exit begins. The staging reads
+// as simulated load intelligence: fast initial burst (0 → 58% in the first
+// 28%), a slow middle crawl (→ 74%), then a decisive snap shut (→ 100%).
+// Per-keyframe `animation-timing-function` gives each leg its own bezier —
+// one global easing could never shape all three phases.
+//
+// Premium detailing: the fill is asymmetric — a dim silver body rising to a
+// pure-white head pinned at the leading edge (gradient anchored right, so
+// scaleX growth always pushes the head forward) — with a soft white
+// drop-shadow for the glowing edge and a fading silver trail dissolving
+// behind it. Transform-only; the veil unmounts at 3.45s, taking the `both`
+// fill with it.
+
+.trace {
+  width: 160px;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.traceFill {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(
+    90deg,
+    rgba(242, 243, 245, 0.15) 0%,
+    rgba(242, 243, 245, 0.55) 70%,
+    #ffffff 100%
+  );
+  box-shadow: -24px 0 20px -8px rgba(242, 243, 245, 0.28);
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
+  animation: trace-fill 3s both;
+}
+
+@keyframes trace-fill {
+  0% {
+    transform: scaleX(0);
+    animation-timing-function: cubic-bezier(0.25, 0.7, 0.35, 1);
+  }
+  28% {
+    transform: scaleX(0.58);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1);
+  }
+  62% {
+    transform: scaleX(0.74);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  86% {
+    transform: scaleX(0.9);
+    animation-timing-function: cubic-bezier(0.3, 0.6, 0.35, 1);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}

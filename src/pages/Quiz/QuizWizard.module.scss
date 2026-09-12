@@ -1,0 +1,725 @@
+// ============================================================================
+// QuizWizard.module.scss
+// ChromaForge Quiz Wizard — Psychological Intake
+// Consumes design tokens from src/styles/_tokens.scss
+//
+// A focused intake that opens on a Step 0 intro screen before the questions.
+// The section grows inside the column `main` (flex: 1) and centers its stage
+// vertically; the atmospheric mesh is a fixed, viewport-pinned layer fully
+// detached from the flex layout (same pattern as AuthPage), so it can never
+// produce a scrollbar. One question per screen, four large glass option
+// cards, a segmented gradient progress hairline, and a GPU-composited drift
+// between steps (opacity + transform only — never layout properties). All
+// spatial motion collapses under `prefers-reduced-motion`.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+// ---------------------------------------------------------------------------
+// Quiz Section — full-band centered canvas
+// ---------------------------------------------------------------------------
+
+.quiz {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(2rem, 4vw, 3.5rem) clamp(1.25rem, 4vw, 2rem);
+  overflow: hidden;
+  overflow: clip;
+  overflow-clip-margin: content-box;
+}
+
+// ---------------------------------------------------------------------------
+// Background — neutral atmosphere with a dot-matrix field (fixed, pinned)
+// ---------------------------------------------------------------------------
+// Tactical Monochrome: ghost-white / silver / graphite washes at whisper
+// alpha over obsidian, plus a barely-visible silver dot matrix (Reactbits
+// dot-pattern inspiration, painted once — static, no blur, no drift on the
+// dots themselves). The whole layer breathes via the existing slow mesh
+// drift; nothing else animates.
+
+.background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle,
+      rgba(232, 234, 237, 0.055) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      ellipse 70% 55% at 18% 12%,
+      rgba(232, 234, 237, 0.09) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 88% 18%,
+      rgba(185, 189, 199, 0.07) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 65% 55% at 50% 100%,
+      rgba(110, 116, 128, 0.08) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 45% 40% at 28% 78%,
+      rgba(232, 234, 237, 0.05) 0%,
+      transparent 50%
+    );
+  background-size:
+    26px 26px,
+    auto,
+    auto,
+    auto,
+    auto;
+  // Settle the dot field toward the edges so the question stage stays calm.
+  mask-image: radial-gradient(85% 80% at 50% 45%, black 55%, transparent 100%);
+  -webkit-mask-image: radial-gradient(85% 80% at 50% 45%, black 55%, transparent 100%);
+
+  animation: meshDrift 30s t.$ease-standard infinite;
+  will-change: transform, opacity;
+
+  @include m.reduced-motion {
+    animation: none;
+  }
+}
+
+@keyframes meshDrift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: translate3d(1.2%, -0.9%, 0) scale(1.02);
+    opacity: 0.98;
+  }
+  50% {
+    transform: translate3d(-0.6%, 0.7%, 0) scale(0.99);
+    opacity: 1;
+  }
+  75% {
+    transform: translate3d(-1.1%, -0.4%, 0) scale(1.01);
+    opacity: 0.97;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Container — centers content, constrains width
+// ---------------------------------------------------------------------------
+
+.container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-6;
+  width: 100%;
+  max-width: 52rem;
+}
+
+// ---------------------------------------------------------------------------
+// Progress Header — kicker + step counter
+// ---------------------------------------------------------------------------
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-4;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-2;
+  font-family: t.$font-mono;
+  font-size: 11px;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 18px;
+    height: 1px;
+    background: t.$gradient-primary;
+    opacity: 0.7;
+  }
+}
+
+.counter {
+  font-family: t.$font-mono;
+  font-size: 12px;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.08em;
+  color: t.$color-text-secondary;
+  white-space: nowrap;
+}
+
+.counterSlash {
+  color: t.$color-text-disabled;
+}
+
+// ---------------------------------------------------------------------------
+// Progress Track — segmented hairline, one segment per question
+//
+// A row of thin tonal segments; each carries its own gradient fill that
+// animates exclusively via scaleX (compositor-only). The active segment
+// tracks the step's live progress; passed segments stay full.
+// ---------------------------------------------------------------------------
+
+.progressTrack {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.progressSegment {
+  position: relative;
+  flex: 1;
+  height: 3px;
+  border-radius: t.$radius-full;
+  background: t.$color-border-subtle;
+  overflow: hidden;
+}
+
+.progressFill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: t.$gradient-primary;
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left center;
+  transition: transform t.$transition-smooth;
+  will-change: transform;
+}
+
+// ---------------------------------------------------------------------------
+// Stage — the active question + its option cards
+//
+// The single authored motion of the wizard: each step drifts horizontally
+// (exit left, enter from right) while fading — opacity and transform only, so
+// the transition stays on the compositor. `entering`/`leaving` are transient
+// classes; the default state is fully settled.
+// ---------------------------------------------------------------------------
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.75rem, 4vw, 2.5rem);
+  // Drift is on-screen movement — the transform gets the decisive in-out
+  // curve (accelerates out, decelerates in) while opacity fades with a
+  // strong ease-out so the new step surfaces instantly.
+  transition:
+    opacity 240ms t.$ease-out,
+    transform 240ms t.$ease-in-out-strong;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+
+  @include m.gpu-layer;
+}
+
+.stageEntering {
+  opacity: 0;
+  transform: translate3d(28px, 0, 0);
+}
+
+.stageLeaving {
+  opacity: 0;
+  transform: translate3d(-28px, 0, 0);
+}
+
+// Reduced motion: the drift's spatial component is skipped entirely — the
+// stage still fades (state change must remain perceivable) but never moves.
+@include m.reduced-motion {
+  .stage,
+  .stageEntering,
+  .stageLeaving {
+    transition: opacity 160ms t.$ease-standard;
+    transform: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Step 0 — Intro Screen
+//
+// A centered, quiet-profound opening: mono kicker flanked by hairlines, a
+// giant Playfair headline, a two-breath explanation, and one glowing CTA.
+// The stage's own drift handles the exit; nothing here animates on its own.
+// ---------------------------------------------------------------------------
+
+.stageIntro {
+  align-items: center;
+  justify-content: center;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.25rem, 3vw, 1.75rem);
+  max-width: 42rem;
+  text-align: center;
+}
+
+.introKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-3;
+  font-family: t.$font-mono;
+  font-size: 11px;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+
+  &::before,
+  &::after {
+    content: '';
+    display: block;
+    width: clamp(24px, 5vw, 40px);
+    height: 1px;
+    background: t.$gradient-primary;
+    opacity: 0.7;
+  }
+}
+
+.introTitle {
+  margin: 0;
+  font-family: t.$font-display;
+  // Giant but disciplined: caps below the token's display ceiling so the
+  // question headline that follows still reads as the same voice.
+  font-size: clamp(2.5rem, 6.5vw, 4.25rem);
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  line-height: t.$line-height-tight;
+  color: t.$color-text-primary;
+  text-wrap: balance;
+  outline: none;
+}
+
+.introText {
+  margin: 0;
+  max-width: 46ch;
+  font-family: t.$font-body;
+  font-size: t.$font-size-body-lg;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+}
+
+.introMeta {
+  margin: 0;
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  letter-spacing: 0.08em;
+  color: t.$color-text-muted;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  margin-top: t.$space-2;
+  padding: clamp(0.875rem, 2vw, 1rem) clamp(1.75rem, 4vw, 2.5rem);
+  font-family: t.$font-body;
+  font-size: t.$font-size-body-lg;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-tight;
+  // Tactical Monochrome: obsidian label on a ghost-white slab. White text
+  // would sink into the silver fill — this exceeds AA at display size.
+  color: #0a0a0b;
+  background: #f2f3f5;
+  border: none;
+  border-radius: t.$radius-md;
+  cursor: pointer;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    0 0 28px rgba(242, 243, 245, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  transition:
+    transform t.$transition-premium,
+    box-shadow t.$transition-smooth;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 14px 38px rgba(0, 0, 0, 0.42),
+      0 0 36px rgba(242, 243, 245, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @include m.focus-ring;
+
+  // Animated Arrow — the icon slides forward on hover/focus without moving
+  // layout (transform-only; the flex gap is fixed, so nothing reflows).
+  svg {
+    width: 16px;
+    height: 16px;
+    transition: transform t.$transition-fast;
+  }
+
+  &:hover svg,
+  &:focus-visible svg {
+    transform: translateX(4px);
+  }
+
+  @include m.reduced-motion {
+    &:hover {
+      transform: none;
+    }
+
+    &:hover svg,
+    &:focus-visible svg {
+      transform: none;
+    }
+  }
+}
+
+// --- Question ---
+
+.question {
+  max-width: 24ch;
+  margin: 0 auto;
+  font-family: t.$font-display;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  line-height: t.$line-height-tight;
+  color: t.$color-text-primary;
+  text-align: center;
+  text-wrap: balance;
+  outline: none;
+}
+
+// ---------------------------------------------------------------------------
+// Options — the four large glass cards
+//
+// Exactly four distinct rectangular cards on $glass-bg / $glass-border.
+// Hover: a 2px lift, border illumination toward $glass-border-highlight and a
+// soft accent-tinted shadow — elevation earned by light, not decoration.
+// Selected: a gradient ring via an inset mask, a background lift, and a
+// popping check mark. All states animate transform, border-color,
+// background-color and box-shadow — nothing that triggers layout.
+// ---------------------------------------------------------------------------
+
+.options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(0.875rem, 1.5vw, 1.25rem);
+
+  @include m.respond-to(t.$breakpoint-sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: t.$space-3;
+  min-height: clamp(7.5rem, 14vw, 9rem);
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  text-align: left;
+  color: inherit;
+  background: t.$glass-bg;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-lg;
+  backdrop-filter: blur(t.$glass-blur);
+  -webkit-backdrop-filter: blur(t.$glass-blur);
+  box-shadow: t.$shadow-sm;
+  cursor: pointer;
+  transition:
+    transform t.$transition-premium,
+    border-color t.$transition-smooth,
+    background-color t.$transition-smooth,
+    box-shadow t.$transition-smooth;
+  will-change: transform;
+  transform: translateZ(0);
+
+  &:hover {
+    transform: translateY(-2px) scale(1.008);
+    background: t.$glass-bg-strong;
+    border-color: t.$glass-border-highlight;
+    box-shadow:
+      0 10px 28px rgba(0, 0, 0, 0.30),
+      0 0 20px rgba(232, 234, 237, 0.08),
+      t.$shadow-md;
+  }
+
+  &:active {
+    transform: translateY(-1px) scale(0.998);
+  }
+
+  @include m.focus-ring;
+
+  @include m.reduced-motion {
+    &:hover,
+    &:active {
+      transform: none;
+    }
+  }
+}
+
+.optionTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: auto;
+}
+
+.optionLetter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  font-family: t.$font-mono;
+  font-size: 10px;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: 0.04em;
+  color: t.$color-text-muted;
+  background: t.$color-bg-interactive;
+  border: 1px solid t.$color-border-default;
+  border-radius: t.$radius-sm;
+  transition:
+    color t.$transition-fast,
+    border-color t.$transition-fast,
+    background-color t.$transition-fast;
+}
+
+.optionCheck {
+  display: flex;
+  padding: 3px;
+  // Obsidian check on the silver ring fill — white would vanish into it.
+  color: #0a0a0b;
+  background: t.$gradient-primary;
+  border-radius: t.$radius-full;
+  // Subtle overshoot pop — a rare delight moment (option selection).
+  animation: checkPop 260ms t.$ease-out-back both;
+}
+
+@keyframes checkPop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@include m.reduced-motion {
+  .optionCheck {
+    animation: none;
+  }
+}
+
+.optionTitle {
+  font-family: t.$font-body;
+  font-size: t.$font-size-body-lg;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-tight;
+  line-height: t.$line-height-snug;
+  color: t.$color-text-primary;
+  text-wrap: balance;
+}
+
+.optionDescription {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-regular;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 34ch;
+}
+
+// --- Selected state — gradient ring + lifted surface ---
+
+.optionSelected {
+  background: t.$glass-bg-strong;
+  border-color: transparent;
+  box-shadow:
+    0 0 0 1px rgba(232, 234, 237, 0.28),
+    t.$shadow-md;
+  transform: translateY(-2px) scale(1.008);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: t.$gradient-primary;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .optionLetter {
+    color: t.$color-text-primary;
+    border-color: t.$glass-border-highlight;
+    background: t.$color-bg-elevated;
+  }
+
+  .optionTitle {
+    color: white;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Foot — quiet exit + intent hint
+// ---------------------------------------------------------------------------
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: t.$space-3;
+  padding-top: t.$space-4;
+  border-top: 1px solid t.$color-border-subtle;
+}
+
+.exit {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-2;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  text-decoration: none;
+  transition: color t.$transition-fast;
+  white-space: nowrap;
+
+  &:hover {
+    color: t.$color-text-primary;
+  }
+
+  @include m.focus-ring;
+
+  // Micro-nudge matching the CTA's animated arrow (backwards = exit).
+  svg {
+    width: 14px;
+    height: 14px;
+    transition: transform t.$transition-fast;
+  }
+
+  &:hover svg {
+    transform: translateX(-2px);
+  }
+
+  @include m.reduced-motion {
+    &:hover svg {
+      transform: none;
+    }
+  }
+}
+
+.hint {
+  font-size: t.$font-size-xs;
+  color: t.$color-text-muted;
+  max-width: none;
+}
+
+// ---------------------------------------------------------------------------
+// Completion — "forging" state between the last answer and the results
+// ---------------------------------------------------------------------------
+
+.completion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: t.$space-4;
+  max-width: 30rem;
+  margin: auto;
+  padding: clamp(2rem, 5vw, 3rem);
+  text-align: center;
+  background: t.$glass-bg;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-xl;
+  backdrop-filter: blur(t.$glass-blur);
+  -webkit-backdrop-filter: blur(t.$glass-blur);
+  box-shadow: t.$shadow-lg;
+  animation: completionIn 420ms t.$ease-out-quart both;
+}
+
+@keyframes completionIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.completionMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  // Obsidian mark on the silver tile — white would sink into the fill.
+  color: #0a0a0b;
+  background: t.$gradient-primary;
+  border-radius: t.$radius-lg;
+  box-shadow: t.$shadow-md;
+  margin-bottom: t.$space-1;
+}
+
+.completionTitle {
+  font-family: t.$font-display;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+}
+
+.completionText {
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 32ch;
+}
+
+.completionSpinner {
+  margin-top: t.$space-2;
+  color: t.$color-accent-cyan;
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

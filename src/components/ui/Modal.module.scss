@@ -1,0 +1,156 @@
+// ============================================================================
+// Modal.module.scss
+// ChromaForge Reusable Glassmorphic Dialog
+// Consumes design tokens from src/styles/_tokens.scss
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+// ---------------------------------------------------------------------------
+// Overlay — full-viewport fixed layer holding the backdrop and dialog
+// ---------------------------------------------------------------------------
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: t.$z-modal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: t.$space-4;
+
+  @include m.respond-to(t.$breakpoint-sm) {
+    padding: t.$space-8;
+  }
+}
+
+// Backdrop — heavy blur over the dimmed page
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: rgba(5, 6, 10, 0.66);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: backdropIn t.$duration-fast t.$ease-out both;
+}
+
+// ---------------------------------------------------------------------------
+// Dialog — elevated dark-glass surface
+// ---------------------------------------------------------------------------
+
+.dialog {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 36rem;
+  max-height: min(85vh, 44rem);
+  overflow: hidden;
+  border-radius: t.$radius-xl;
+  background: t.$glass-bg-strong;
+  border: 1px solid t.$glass-border-highlight;
+  backdrop-filter: blur(t.$glass-blur);
+  -webkit-backdrop-filter: blur(t.$glass-blur);
+  box-shadow: t.$shadow-xl;
+  outline: none;
+  animation: dialogIn t.$duration-slow t.$ease-out-expo both;
+}
+
+// Wide band — detail-rich content (full brand-system preview). The body owns
+// scrolling below, so the header and close control never leave the viewport.
+.dialogWide {
+  max-width: min(68rem, 100%);
+  max-height: min(88vh, 56rem);
+}
+
+// ---------------------------------------------------------------------------
+// Header — title + close control
+// ---------------------------------------------------------------------------
+
+.header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-4;
+  padding: t.$space-5 t.$space-6;
+  border-bottom: 1px solid t.$glass-border;
+  background: t.$color-bg-elevated;
+}
+
+.title {
+  font-family: t.$font-body;
+  font-size: t.$font-size-h4;
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-md;
+  background: transparent;
+  color: t.$color-text-secondary;
+  cursor: pointer;
+  transition:
+    background-color t.$transition-fast,
+    border-color t.$transition-fast,
+    color t.$transition-fast;
+
+  &:hover {
+    background: t.$color-bg-interactive;
+    border-color: t.$glass-border-highlight;
+    color: t.$color-text-primary;
+  }
+
+  @include m.focus-ring;
+}
+
+// ---------------------------------------------------------------------------
+// Body — scrollable content area
+// The body owns vertical scrolling (the header above never scrolls away), with
+// the dark themed scrollbar from the shared mixin.
+// ---------------------------------------------------------------------------
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: t.$space-6;
+  @include m.custom-scrollbar;
+}
+
+// ---------------------------------------------------------------------------
+// Entrance — one authored moment: backdrop fades, dialog eases up
+// ---------------------------------------------------------------------------
+
+@keyframes backdropIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

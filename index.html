@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/src/assets/chromaforge-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      /* FOUC guard — paint the Tactical Monochrome ground (#0a0a0b) before any
+         CSS bundle arrives, so a hard load never flashes white, legacy
+         blue-obsidian, or the app beneath the splash veil. Must track
+         $color-bg-primary by hand — this file cannot consume SCSS tokens. */
+      html {
+        background-color: #0a0a0b;
+      }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@800;900&display=swap"
+      rel="stylesheet"
+    />
+    <meta
+      name="description"
+      content="ChromaForge — Plataforma de identidad visual con IA. Convierte la visión de tu marca en un sistema visual completo, matemáticamente equilibrado y listo para producción."
+    />
+    <title>ChromaForge</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

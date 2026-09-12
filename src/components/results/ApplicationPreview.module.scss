@@ -1,0 +1,395 @@
+// ============================================================================
+// ApplicationPreview.module.scss
+// ChromaForge Application Mockups — the identity in real interface contexts
+// Consumes design tokens from src/styles/_tokens.scss and the `--brand-*`
+// custom properties published by the Results Workspace.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+// ---------------------------------------------------------------------------
+// Premium glass panel — the shared workspace surface language
+// ---------------------------------------------------------------------------
+
+.panel {
+  position: relative;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background: t.$glass-bg;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-lg;
+  backdrop-filter: blur(t.$glass-blur);
+  -webkit-backdrop-filter: blur(t.$glass-blur);
+  box-shadow: t.$shadow-md;
+}
+
+// ---------------------------------------------------------------------------
+// Panel header — eyebrow / title / build metadata
+// ---------------------------------------------------------------------------
+
+.panelHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: t.$space-4;
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.panelHeading {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-1;
+}
+
+.panelEyebrow {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+}
+
+.panelTitle {
+  font-family: t.$font-display;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  line-height: t.$line-height-tight;
+  color: t.$color-text-primary;
+}
+
+.panelMeta {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: t.$color-text-muted;
+  white-space: nowrap;
+}
+
+// ---------------------------------------------------------------------------
+// Mockup grid — two practical surfaces, stacked on mobile
+// ---------------------------------------------------------------------------
+
+.mockupGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: t.$space-6;
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: t.$space-6;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mockup 1 — Product UI window
+// ---------------------------------------------------------------------------
+
+.windowMockup {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  border-radius: t.$radius-lg;
+  border: 1px solid t.$glass-border;
+  background-color: var(--brand-background, t.$color-bg-primary);
+  overflow: hidden;
+  box-shadow: t.$shadow-md;
+}
+
+.windowBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-3;
+  padding: t.$space-2 t.$space-4;
+  border-bottom: 1px solid t.$color-border-subtle;
+}
+
+.windowLights {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.windowLight {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: t.$color-text-disabled;
+
+  &:first-child {
+    background: t.$color-error;
+  }
+
+  &:nth-child(2) {
+    background: t.$color-warning;
+  }
+
+  &:nth-child(3) {
+    background: t.$color-success;
+  }
+}
+
+.windowTitle {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: t.$color-text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.windowAction {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: t.$color-text-muted;
+}
+
+.appHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-3;
+  padding: t.$space-3 t.$space-4;
+  border-bottom: 1px solid t.$color-border-subtle;
+}
+
+.appWordmark {
+  font-family: t.$font-display;
+  font-size: t.$font-size-body-lg;
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  white-space: nowrap;
+}
+
+.appNav {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: t.$color-text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appBody {
+  display: grid;
+  grid-template-columns: minmax(96px, 0.9fr) minmax(0, 1.6fr);
+  gap: t.$space-4;
+  padding: t.$space-5;
+  min-width: 0;
+}
+
+.appSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-3;
+  padding-right: t.$space-4;
+  border-right: 1px solid t.$color-border-subtle;
+  min-width: 0;
+}
+
+.appSidebarLabel {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: t.$color-text-muted;
+}
+
+.appRole {
+  display: flex;
+  align-items: center;
+  gap: t.$space-2;
+  min-width: 0;
+}
+
+.appSwatch {
+  width: 14px;
+  height: 14px;
+  border-radius: t.$radius-sm;
+  border: 1px solid t.$color-border-strong;
+  flex-shrink: 0;
+}
+
+.appRoleLabel {
+  font-family: t.$font-body;
+  font-size: t.$font-size-xs;
+  color: t.$color-text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: t.$space-2;
+  min-width: 0;
+}
+
+.appEyebrow {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand-accent, t.$color-accent-cyan);
+}
+
+.appTitle {
+  font-family: t.$font-body;
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+}
+
+.appText {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 46ch;
+}
+
+.appActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: t.$space-3;
+  margin-top: t.$space-2;
+}
+
+// Shared action treatment — the primary/secondary pair that demonstrates how
+// the palette's readable roles translate into interface controls.
+.actionPrimary {
+  display: inline-flex;
+  align-items: center;
+  padding: t.$space-2 t.$space-5;
+  border-radius: t.$radius-sm;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  white-space: nowrap;
+  box-shadow: t.$shadow-sm;
+}
+
+.actionSecondary {
+  display: inline-flex;
+  align-items: center;
+  padding: t.$space-2 t.$space-5;
+  border: 1px solid;
+  border-radius: t.$radius-sm;
+  background: rgba(255, 255, 255, 0.03);
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  white-space: nowrap;
+}
+
+// ---------------------------------------------------------------------------
+// Mockup 2 — Web hero
+// ---------------------------------------------------------------------------
+
+.heroMockup {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  border-radius: t.$radius-lg;
+  border: 1px solid t.$glass-border;
+  background-color: var(--brand-background, t.$color-bg-primary);
+  overflow: hidden;
+  box-shadow: t.$shadow-md;
+}
+
+.heroNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-3;
+  padding: t.$space-3 t.$space-5;
+  border-bottom: 1px solid t.$color-border-subtle;
+}
+
+.heroWordmark {
+  font-family: t.$font-display;
+  font-size: t.$font-size-body-lg;
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  white-space: nowrap;
+}
+
+.heroNavLinks {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: t.$color-text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heroContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: t.$space-3;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  min-width: 0;
+}
+
+.heroEyebrow {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  font-family: t.$font-display;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: t.$font-weight-bold;
+  letter-spacing: t.$tracking-tight;
+  line-height: t.$line-height-tight;
+  color: t.$color-text-primary;
+}
+
+.heroText {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 42ch;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: t.$space-3;
+  margin-top: t.$space-2;
+}
+
+.actionGhost {
+  display: inline-flex;
+  align-items: center;
+  padding: t.$space-2 t.$space-5;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-sm;
+  background: rgba(255, 255, 255, 0.04);
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  white-space: nowrap;
+}

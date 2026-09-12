@@ -1,0 +1,505 @@
+// ============================================================================
+// NotFound.module.scss
+// ChromaForge 404 — Card-less Error Stage in the Dark Cyber-SaaS World
+// Consumes design tokens from src/styles/_tokens.scss
+//
+// Composition: a full-band centered stage (flex: 1 inside the column `main`,
+// like the Auth canvas) directly on the viewport-pinned aura mesh. No card,
+// no panel, no chip — the numeral is a sculpture on the canvas and the mono
+// `GET <path> → 404` line reads as its museum label. The helper text and the
+// actions float below. Entrances follow the project's state-driven cascade —
+// opacity + translate only (GPU-composited), exponential ease-out, staggered
+// delays — and the aura drift is a transform-only loop that collapses under
+// prefers-reduced-motion.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+// ---------------------------------------------------------------------------
+// Section — full-band centered error stage
+//
+// Mirrors the Auth canvas contract: grows inside the flex column `main` to
+// fill exactly the visible band between the sticky header and the
+// content-sized footer. The section's isolation context scopes the fixed
+// aura below the header's z-layers.
+// ---------------------------------------------------------------------------
+
+.notFound {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(2rem, 5vw, 4rem) clamp(1.25rem, 4vw, 3rem);
+  background: transparent;
+}
+
+// ---------------------------------------------------------------------------
+// Background — static dot field + neutral backlight beneath the terminal
+//
+// Viewport-pinned (`position: fixed; inset: 0`) so nothing participates in
+// layout or scrollbars. The motion lives entirely in the `NotFoundTerminal`
+// canvas (flickering ignition grid + scanline, rAF, low-res 2D); this CSS
+// paints once: a silver dot matrix, a center backlight landing exactly
+// behind the numeral (the only "surface" the glyphs sit on — the stage
+// carries no card), and two whisper washes. No CSS animation here by design.
+// ---------------------------------------------------------------------------
+
+.background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(232, 234, 237, 0.05) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      ellipse 45% 38% at 50% 42%,
+      rgba(232, 234, 237, 0.08) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 65% 50% at 22% 10%,
+      rgba(185, 189, 199, 0.06) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 50% 100%,
+      rgba(110, 116, 128, 0.07) 0%,
+      transparent 55%
+    );
+  background-size:
+    26px 26px,
+    auto,
+    auto,
+    auto;
+}
+
+// Terminal grid host — the canvas fills the pinned background layer.
+.field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+// ---------------------------------------------------------------------------
+// Stage — centered column directly on the aura
+// ---------------------------------------------------------------------------
+
+.stage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+// ---------------------------------------------------------------------------
+// Eyebrow — mono kicker above the numeral (delay 0ms)
+// ---------------------------------------------------------------------------
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-2;
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 22px;
+    height: 1px;
+    background: t.$color-accent-cyan;
+    opacity: 0.55;
+  }
+
+  opacity: 0;
+  translate: 0 10px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 400ms t.$ease-out-quint,
+      translate 400ms t.$ease-out-quint;
+    transition-delay: 0ms;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Title — fluid Playfair numeral with a monochrome glitch, the page's only
+// landmark (delay 70ms)
+//
+// The numeral deliberately exceeds `$font-size-display`'s ceiling (5.5rem):
+// on a 404 the number IS the content. Two ghost slices (`::before` white,
+// `::after` graphite) tear across on a slow `steps()` cycle — bursts of
+// clip-path offsets, never layout — and the cycle tightens while hovered.
+// Floating directly on the field; the center backlight is its only ground.
+// ---------------------------------------------------------------------------
+
+.title {
+  position: relative;
+  font-family: t.$font-display;
+  font-size: clamp(5rem, 17vw, 15rem);
+  font-weight: t.$font-weight-display;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: t.$color-text-primary;
+  margin-top: clamp(0.75rem, 2vw, 1.25rem);
+
+  opacity: 0;
+  translate: 0 14px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 460ms t.$ease-out-quint,
+      translate 460ms t.$ease-out-quint;
+    transition-delay: 70ms;
+  }
+
+  // Glitch slices — identical glyphs stacked exactly over the original. A
+  // permanent faint chromatic split (white -3px, graphite +3px) keeps the
+  // error charge present at all times; hard clip-path bursts tear across on
+  // a slow `steps()` cycle, tightening to sub-second while hovered.
+  &::before,
+  &::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
+    opacity: 0.28;
+    pointer-events: none;
+  }
+
+  &::before {
+    color: #ffffff;
+    transform: translate(-3px, 0);
+    animation: glitch-slice 4.6s steps(1, end) infinite;
+  }
+
+  &::after {
+    color: #6e7480;
+    transform: translate(3px, 0);
+    animation: glitch-slice 3.7s steps(1, end) infinite reverse;
+  }
+
+  &:hover::before {
+    animation-duration: 1.2s;
+  }
+
+  &:hover::after {
+    animation-duration: 0.9s;
+  }
+
+  @include m.reduced-motion {
+    &::before,
+    &::after {
+      animation: none;
+      opacity: 0;
+    }
+  }
+}
+
+@keyframes glitch-slice {
+  0%,
+  88% {
+    opacity: 0.28;
+    clip-path: inset(0 0 0 0);
+  }
+  89% {
+    opacity: 0.9;
+    transform: translate(-12px, 3px);
+    clip-path: inset(8% 0 58% 0);
+  }
+  91% {
+    opacity: 0.9;
+    transform: translate(10px, -3px);
+    clip-path: inset(62% 0 6% 0);
+  }
+  93% {
+    opacity: 0.9;
+    transform: translate(-7px, 2px) skewX(-4deg);
+    clip-path: inset(32% 0 42% 0);
+  }
+  95% {
+    opacity: 0.9;
+    transform: translate(4px, 0);
+    clip-path: inset(80% 0 2% 0);
+  }
+  97%,
+  100% {
+    opacity: 0.28;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Route row — museum label under the numeral, no box (delay 140ms)
+//
+// A pure mono caption floating on the canvas: `GET <path> → 404`. The
+// `routePath` code element resets the global `code` chip (background,
+// padding, 0.875em) so the fingerprint stays typographic, never boxed.
+// ---------------------------------------------------------------------------
+
+.routeRow {
+  display: inline-flex;
+  align-items: baseline;
+  gap: t.$space-2;
+  min-width: 0;
+  max-width: min(100%, 460px);
+  margin-top: clamp(1.5rem, 3.5vw, 2.25rem);
+  font-family: t.$font-mono;
+  font-size: t.$font-size-small;
+  color: t.$color-text-muted;
+
+  opacity: 0;
+  translate: 0 10px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 440ms t.$ease-out-quint,
+      translate 440ms t.$ease-out-quint;
+    transition-delay: 140ms;
+  }
+}
+
+.routeMethod {
+  flex-shrink: 0;
+  font-weight: t.$font-weight-semibold;
+  color: t.$color-accent-cyan;
+}
+
+// Long unknown paths must ellipsize without blowing the row or the page.
+.routePath {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: inherit;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  color: t.$color-text-secondary;
+}
+
+.routeArrow {
+  flex-shrink: 0;
+  color: t.$color-text-disabled;
+}
+
+.routeStatus {
+  flex-shrink: 0;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: 0.06em;
+  color: t.$color-error;
+}
+
+// Terminal caret — blinking block after the fingerprint. steps() snap only,
+// no layout cost; still under reduced motion.
+.caret {
+  flex-shrink: 0;
+  align-self: center;
+  width: 8px;
+  height: 1.1em;
+  background: t.$color-text-secondary;
+  animation: caret-blink 1.1s steps(1, end) infinite;
+
+  @include m.reduced-motion {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+@keyframes caret-blink {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Message — helper text floating on the canvas (delay 180ms)
+// ---------------------------------------------------------------------------
+
+.message {
+  margin-top: t.$space-4;
+  font-family: t.$font-body;
+  font-size: t.$font-size-body;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 42ch;
+
+  opacity: 0;
+  translate: 0 10px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 440ms t.$ease-out-quint,
+      translate 440ms t.$ease-out-quint;
+    transition-delay: 180ms;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Actions — primary return + quiet home safety net (delay 220ms)
+// ---------------------------------------------------------------------------
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-3;
+  margin-top: clamp(1.75rem, 3.5vw, 2.5rem);
+
+  opacity: 0;
+  translate: 0 12px;
+
+  &.entered {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 440ms t.$ease-out-quint,
+      translate 440ms t.$ease-out-quint;
+    transition-delay: 220ms;
+  }
+}
+
+.primaryButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-3 t.$space-6;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  // Obsidian on ghost-white — white text would sink into the silver fill.
+  color: #0a0a0b;
+  background: #f2f3f5;
+  border: none;
+  border-radius: t.$radius-sm;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  transition:
+    transform t.$transition-premium,
+    box-shadow t.$transition-smooth;
+
+  &:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow:
+      t.$shadow-md,
+      0 0 28px rgba(242, 243, 245, 0.12);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.99);
+  }
+
+  @include m.focus-ring;
+  // Cursor-tracked graphite wash — shared spotlight system.
+  @include m.spotlight-fill;
+
+  // Animated Arrow (back navigation): the icon retreats on hover/focus —
+  // transform-only, the flex gap never reflows.
+  svg {
+    transition: transform t.$transition-fast;
+  }
+
+  &:hover svg,
+  &:focus-visible svg {
+    transform: translateX(-4px);
+  }
+
+  @include m.reduced-motion {
+    &:hover svg,
+    &:focus-visible svg {
+      transform: none;
+    }
+  }
+}
+
+.homeLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-3 t.$space-4;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  background: transparent;
+  border: 1px solid t.$color-border-default;
+  border-radius: t.$radius-sm;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    transform t.$transition-fast,
+    color t.$transition-fast,
+    border-color t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-text-primary;
+    border-color: t.$color-border-strong;
+    background-color: t.$color-bg-interactive;
+    text-decoration: none;
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.99);
+  }
+
+  @include m.focus-ring;
+  // Silver edge-light tracking the cursor — shared spotlight system.
+  @include m.spotlight-ring;
+}
+
+// ---------------------------------------------------------------------------
+// Visually hidden — the accessible h1 label
+// ---------------------------------------------------------------------------
+
+.srOnly {
+  @include m.sr-only;
+}

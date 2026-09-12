@@ -1,0 +1,360 @@
+// ============================================================================
+// PaletteCard.module.scss
+// ChromaForge Bento Palette Card
+// Consumes design tokens from src/styles/_tokens.scss
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+// ---------------------------------------------------------------------------
+// Base Card — Dark Glass Surface
+//
+// A flex column with semantic header/content/footer zones. The card owns its
+// surface hierarchy (glass, border, radius, shadow) while the variant classes
+// below own grid spans and surface emphasis.
+// ---------------------------------------------------------------------------
+
+.card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: t.$space-4;
+  background: t.$glass-bg;
+  border: 1px solid t.$glass-border;
+  border-radius: t.$radius-lg;
+  backdrop-filter: blur(t.$glass-blur);
+  -webkit-backdrop-filter: blur(t.$glass-blur);
+  box-shadow: t.$shadow-sm;
+  overflow: hidden;
+
+  // Hidden start state — the grid toggles `.cardEntered` after two painted
+  // frames (StrictMode-safe, see useEntrance), so the entrance transition
+  // always ramps 0 → 1 instead of skipping to the final frame on mount.
+  opacity: 0;
+  translate: 0 16px;
+}
+
+// State-driven entrance — played when the parent grid flips the card into
+// the entered state. The entrance properties (opacity / translate) use the
+// grid's `--entrance-delay` for the stagger; the hover properties share the
+// same transition declaration so the interactive lift never fights the
+// entrance, and their delays are always 0 so hover stays instant.
+.card.cardEntered {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity t.$duration-slow t.$ease-out-quint,
+    translate t.$duration-slow t.$ease-out-quint,
+    transform t.$transition-premium,
+    box-shadow t.$transition-smooth,
+    border-color t.$transition-fast;
+  transition-delay:
+    var(--entrance-delay, 0ms),
+    var(--entrance-delay, 0ms),
+    0ms,
+    0ms,
+    0ms;
+}
+
+// ---------------------------------------------------------------------------
+// Variant Spans
+// Mobile is a single column, so no span is applied below the breakpoints.
+// Tablet (md): the grid is two columns — the hero leads full width and wide
+// cards span the full row; everything else stays single-cell so the flow
+// remains balanced without holes.
+// Desktop (xl): the full Bento composition on a four-column grid.
+// ---------------------------------------------------------------------------
+
+@include m.respond-to(t.$breakpoint-md) {
+  .variantHero {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .variantWide {
+    grid-column: span 2;
+  }
+}
+
+@include m.respond-to(t.$breakpoint-xl) {
+  .variantHero {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .variantWide {
+    grid-column: span 2;
+    grid-row: span 1;
+  }
+
+  .variantTall {
+    grid-column: span 1;
+    grid-row: span 2;
+  }
+
+  .variantSquare {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Hero Surface — the featured identity card commands the most attention
+// without becoming a neon gradient wall. The gradient is localized: two soft
+// radial washes behind the content, a stronger glass tint, a highlighted
+// border and a gradient hairline at the top edge.
+// ---------------------------------------------------------------------------
+
+.variantHero {
+  padding: t.$space-5;
+  background:
+    radial-gradient(
+      120% 90% at 88% -10%,
+      rgba(232, 234, 237, 0.09) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      90% 80% at 100% 100%,
+      rgba(110, 116, 128, 0.07) 0%,
+      transparent 50%
+    ),
+    t.$glass-bg-strong;
+  border-color: t.$glass-border-highlight;
+  box-shadow: t.$shadow-lg;
+
+  // Silver hairline along the top edge
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(232, 234, 237, 0.45),
+      rgba(185, 189, 199, 0.35),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  .title {
+    font-family: t.$font-display;
+    font-size: clamp(1.5rem, 2.2vw, 2rem);
+    font-weight: t.$font-weight-bold;
+    letter-spacing: t.$tracking-tight;
+  }
+
+  @include m.respond-to(t.$breakpoint-xl) {
+    padding: t.$space-6;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Interactive Cards — hover lift + pointer-aware spotlight
+//
+// The spotlight position is driven by --spot-x / --spot-y CSS custom
+// properties written directly to the element (no React state). It sits above
+// the surface but below the card content (which carries z-index).
+// ---------------------------------------------------------------------------
+
+.cardInteractive {
+  transition:
+    transform t.$transition-premium,
+    box-shadow t.$transition-smooth,
+    border-color t.$transition-fast;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+      circle at var(--spot-x, 50%) var(--spot-y, 24%),
+      rgba(255, 255, 255, 0.07),
+      transparent 46%
+    );
+    transition: opacity t.$transition-smooth;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: t.$glass-border-highlight;
+    box-shadow: t.$shadow-xl;
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  // Press feedback — the card is a clickable preview trigger; a subtle
+  // scale-down on press confirms the interaction without fighting the
+  // entrance `translate` (transform and translate compose).
+  &:active {
+    transform: translateY(-1px) scale(0.99);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Clickable Cards — preview trigger affordance
+// ---------------------------------------------------------------------------
+
+.cardClickable {
+  cursor: pointer;
+
+  @include m.focus-ring;
+}
+
+// ---------------------------------------------------------------------------
+// Card Zones — header / content / footer
+// Content is lifted above the spotlight layer.
+// ---------------------------------------------------------------------------
+
+.header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-1;
+  margin-bottom: t.$space-3;
+}
+
+// When a floating action sits in the top-right corner, the header text yields
+// the corner so the title can never run beneath the control.
+.headerWithAction {
+  padding-right: t.$space-8;
+}
+
+// ---------------------------------------------------------------------------
+// Floating Action — compact corner control (e.g. delete trigger)
+// Lifts above the spotlight (`z-index: 1`) and the header/content zones.
+// ---------------------------------------------------------------------------
+
+.action {
+  position: absolute;
+  top: t.$space-3;
+  right: t.$space-3;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+}
+
+.eyebrow {
+  font-family: t.$font-mono;
+  font-size: 10px;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: t.$color-accent-cyan;
+}
+
+.title {
+  font-family: t.$font-body;
+  font-size: t.$font-size-body;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: -0.01em;
+  color: t.$color-text-primary;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: t.$space-3;
+  min-height: 0;
+}
+
+.description {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-snug;
+  color: t.$color-text-secondary;
+}
+
+.footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  margin-top: t.$space-3;
+  padding-top: t.$space-3;
+  border-top: 1px solid t.$color-border-subtle;
+  font-family: t.$font-mono;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: t.$color-text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ---------------------------------------------------------------------------
+// Palette Visualization — data-driven swatches
+// ---------------------------------------------------------------------------
+
+// Horizontal strip — equal color bars (used on non-tall cards)
+.swatchStrip {
+  display: flex;
+  gap: t.$space-2;
+  list-style: none;
+  margin: 0;
+  margin-top: auto;
+  padding: 0;
+}
+
+.swatchStripItem {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.swatchStripBar {
+  display: block;
+  height: 32px;
+  border-radius: t.$radius-sm;
+  border: 1px solid t.$color-border-strong;
+}
+
+// Vertical ladder — color bar + hex value (tall variant)
+.swatchLadder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  gap: t.$space-3;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.swatchLadderItem {
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+}
+
+.swatchLadderBar {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  border-radius: t.$radius-sm;
+  border: 1px solid t.$color-border-strong;
+}
+
+.swatchHex {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  letter-spacing: 0.02em;
+  color: t.$color-text-secondary;
+  flex-shrink: 0;
+}

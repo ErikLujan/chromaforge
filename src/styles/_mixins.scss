@@ -1,0 +1,243 @@
+// ============================================================================
+// ChromaForge Reusable Mixins
+// Only patterns with genuine cross-component reuse
+// ============================================================================
+
+@use 'tokens' as t;
+
+// ---------------------------------------------------------------------------
+// Responsive Breakpoint Helper — Mobile-First
+// Usage: @include t.respond-to(t.$breakpoint-md) { ... }
+// ---------------------------------------------------------------------------
+@mixin respond-to($breakpoint) {
+  @media (min-width: $breakpoint) {
+    @content;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Max-Width Responsive Helper
+// Usage: @include t.respond-below(t.$breakpoint-md) { ... }
+// ---------------------------------------------------------------------------
+@mixin respond-below($breakpoint) {
+  @media (max-width: ($breakpoint - 0.02px)) {
+    @content;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Glass Surface Treatment
+// Applies backdrop-filter blur + translucent background + border
+// ---------------------------------------------------------------------------
+@mixin glass-surface($strong: false) {
+  @if $strong {
+    background: t.$glass-bg-strong;
+  } @else {
+    background: t.$glass-bg;
+  }
+  border: 1px solid t.$glass-border;
+  backdrop-filter: blur(t.$glass-blur);
+  -webkit-backdrop-filter: blur(t.$glass-blur);
+}
+
+// ---------------------------------------------------------------------------
+// Text Truncation — Single Line
+// ---------------------------------------------------------------------------
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ---------------------------------------------------------------------------
+// Text Truncation — Multi-Line
+// Usage: @include truncate-lines(3);
+// ---------------------------------------------------------------------------
+@mixin truncate-lines($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ---------------------------------------------------------------------------
+// Accessible Focus Ring — Visible Against Dark Surfaces
+// ---------------------------------------------------------------------------
+@mixin focus-ring($offset: 2px, $color: t.$color-accent-primary) {
+  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid $color;
+    outline-offset: $offset;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Visually Hidden — Screen Reader Only
+// ---------------------------------------------------------------------------
+@mixin sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Spotlight Fill — cursor-tracked wash for LIGHT (ghost-white) buttons
+// ---------------------------------------------------------------------------
+// ReactBits-spotlight pattern adapted to Tactical Monochrome: a graphite
+// radial wash follows `--spot-x` / `--spot-y` (written per-pointermove by
+// the `useSpotlight` hook; 50% fallbacks center it for keyboard focus).
+// Opacity-only reveal — position never transitions, so the light feels
+// glued to the cursor. GPU-cheap: one pseudo-element, no layout cost.
+//
+// Requires the consumer to be `position: relative` with `overflow: hidden`.
+// ---------------------------------------------------------------------------
+@mixin spotlight-fill($wash: rgba(10, 10, 11, 0.16), $size: 120px) {
+  --spot-x: 50%;
+  --spot-y: 50%;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      $size circle at var(--spot-x) var(--spot-y),
+      $wash 0%,
+      transparent 65%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms t.$ease-out;
+  }
+
+  &:hover::before,
+  &:focus-visible::before {
+    opacity: 1;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Spotlight Ring — cursor-tracked illumination for ghost-button hairlines
+// ---------------------------------------------------------------------------
+// A silver segment tracks the cursor along the 1px edge via `--spot-x`.
+// Ring-mask technique keeps the button fill untouched — only the edge
+// lights. The consumer's plain border-color shift remains as the fallback
+// where mask-composite is unsupported.
+//
+// Requires the consumer to be `position: relative`.
+// ---------------------------------------------------------------------------
+@mixin spotlight-ring($light: rgba(242, 243, 245, 0.6), $size: 90px) {
+  --spot-x: 50%;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(
+      $size circle at var(--spot-x) 50%,
+      $light 0%,
+      transparent 70%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms t.$ease-out;
+  }
+
+  &:hover::before,
+  &:focus-visible::before {
+    opacity: 1;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reduced Motion — Disable Non-Essential Animation
+// ---------------------------------------------------------------------------
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Scrollbar Styling — Dark Cyber-SaaS
+// A thin, elegant scrollbar fully integrated with the obsidian surfaces: a
+// near-invisible dark track and a silver-tinted translucent thumb that gains
+// a soft platinum glow on hover (and a slightly brighter press state).
+// Firefox scrollbar-color mirrors the WebKit thumb/track pair.
+// ---------------------------------------------------------------------------
+@mixin custom-scrollbar($width: 6px) {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(185, 189, 199, 0.35) rgba(10, 10, 11, 0.40);
+
+  &::-webkit-scrollbar {
+    width: $width;
+    height: $width;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(10, 10, 11, 0.40);
+    border-radius: t.$radius-full;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      rgba(185, 189, 199, 0.32),
+      rgba(110, 116, 128, 0.32)
+    );
+    border-radius: t.$radius-full;
+
+    &:hover {
+      background: linear-gradient(
+        180deg,
+        rgba(185, 189, 199, 0.58),
+        rgba(110, 116, 128, 0.58)
+      );
+      box-shadow: 0 0 10px rgba(185, 189, 199, 0.45);
+    }
+
+    &:active {
+      background: linear-gradient(
+        180deg,
+        rgba(185, 189, 199, 0.72),
+        rgba(110, 116, 128, 0.72)
+      );
+      box-shadow: 0 0 12px rgba(185, 189, 199, 0.55);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Absolute Center — Horizontal & Vertical
+// ---------------------------------------------------------------------------
+@mixin absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// ---------------------------------------------------------------------------
+// GPU-Accelerated Layer Promotion
+// Use sparingly — only for elements that animate frequently
+// ---------------------------------------------------------------------------
+@mixin gpu-layer {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}

@@ -1,0 +1,80 @@
+// ============================================================================
+// AsyncButton.module.scss
+// ChromaForge premium action button — resting icon/label swaps to a loader +
+// busy label while an async task runs.
+//
+// Layout strategy (no overlap, no jitter):
+//   - .restState is a single inline-flex row (icon + label) that owns the
+//     button's width in the idle state.
+//   - While busy, .restState is removed from flow (display:none) so it can
+//     never clash with or bleed through the busy row.
+//   - .busyState is a SEPARATE inline-flex row (loader + busy label) with a
+//     real `gap`, so the spinner and the text can NEVER overlap — no matter
+//     how much longer the busy label is than the resting one.
+//   - The button itself is `position: relative; display: inline-flex`, so the
+//     consumer's border / background / padding wrap both states identically
+//     and the busy row simply replaces the resting row in place.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+
+.base {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+// ---------------------------------------------------------------------------
+// Resting State — icon + label, owns the idle width
+// ---------------------------------------------------------------------------
+
+.restState {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-2;
+  white-space: nowrap;
+}
+
+// When busy, the resting content is fully removed from flow so it cannot
+// clash with — or show through — the busy row.
+.base[aria-busy='true'] .restState {
+  display: none;
+}
+
+.restIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.restLabel,
+.busyLabel {
+  white-space: nowrap;
+}
+
+// ---------------------------------------------------------------------------
+// Busy State — loader + busy label in one gap-separated row
+// ---------------------------------------------------------------------------
+
+.busyState {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-2;
+  white-space: nowrap;
+  animation: busyIn 140ms t.$ease-out-quart both;
+}
+
+@keyframes busyIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

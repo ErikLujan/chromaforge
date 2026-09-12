@@ -1,0 +1,112 @@
+// ============================================================================
+// ActionLoader.module.scss
+// ChromaForge premium busy indicator — segmented identity ring + pulsing core.
+// Consumes design tokens from src/styles/_tokens.scss.
+//
+// Motion contract: transform + opacity only. The ring rotates on its group
+// (`transform: rotate`), the core pulses on opacity + scale — every frame is
+// GPU-composited, nothing triggers layout.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+
+.loader {
+  display: block;
+  overflow: visible;
+}
+
+// Faint full ring — the quiet track the segments travel over. Kept neutral
+// (white-tinted) so it reads on both dark glass and filled surfaces.
+.track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 1.25;
+}
+
+// Three rounded dashes — the product's indigo → violet → cyan identity.
+// The static rotate() attributes spread the dashes 120° apart; the group
+// animation spins the whole set as one elegant segment.
+.segments {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: loaderSpin 760ms linear infinite;
+}
+
+.segment {
+  fill: none;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-dasharray: 8.8 3.24;
+}
+
+.segment:nth-child(1) {
+  stroke: t.$color-accent-primary;
+}
+
+.segment:nth-child(2) {
+  stroke: t.$color-accent-secondary;
+}
+
+.segment:nth-child(3) {
+  stroke: t.$color-accent-cyan;
+}
+
+// Pulsing core — a heartbeat that keeps the loader alive at small sizes.
+// The neutral in-out curve keeps the breathe smooth; spin above stays linear
+// (constant motion).
+.core {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: loaderPulse 1.15s t.$ease-standard infinite;
+}
+
+.core circle {
+  fill: t.$color-accent-cyan;
+}
+
+// Light variant — white identity for color-filled surfaces (gradient CTAs,
+// destructive actions) where accent tones would sink into the fill. The
+// opacity ramp on the three dashes preserves the spinning direction.
+.light {
+  .track {
+    stroke: rgba(255, 255, 255, 0.20);
+  }
+
+  .segment:nth-child(1) {
+    stroke: #ffffff;
+    opacity: 1;
+  }
+
+  .segment:nth-child(2) {
+    stroke: #ffffff;
+    opacity: 0.72;
+  }
+
+  .segment:nth-child(3) {
+    stroke: #ffffff;
+    opacity: 0.48;
+  }
+
+  .core circle {
+    fill: #ffffff;
+  }
+}
+
+@keyframes loaderSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loaderPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
