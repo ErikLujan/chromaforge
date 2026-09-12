@@ -6,7 +6,7 @@
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?logo=react&logoColor=0b0d12&style=for-the-badge)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white&style=for-the-badge)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite&logoColor=white&style=for-the-badge)](https://vitejs.dev/)
-[![Supabase](https://img.shields.io/badge/Supabase-Postgres Auth RLS Storage-3FCF8E?logo=supabase&logoColor=0b0d12&style=for-the-badge)](https://supabase.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres%20Auth%20RLS%20Storage-3FCF8E?logo=supabase&logoColor=0b0d12&style=for-the-badge)](https://supabase.com/)
 [![Zustand](https://img.shields.io/badge/Zustand-5.0-FF6B6B?style=for-the-badge)](https://zustand.docs.pmnd.rs/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white&style=for-the-badge)](https://tailwindcss.com/)
 [![WCAG](https://img.shields.io/badge/WCAG_2.1-AA%20AA%2FAAA-0b0d12?style=for-the-badge)](https://www.w3.org/WAI/standards-guidelines/wcag/)
