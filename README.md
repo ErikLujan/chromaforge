@@ -11,10 +11,6 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white&style=for-the-badge)](https://tailwindcss.com/)
 [![WCAG](https://img.shields.io/badge/WCAG_2.1-AA%20AA%2FAAA-0b0d12?style=for-the-badge)](https://www.w3.org/WAI/standards-guidelines/wcag/)
 
-![Banner principal de ChromaForge](docs/hero-banner.png)
-
-![Captura de pantalla del espacio de trabajo de resultados](docs/screenshot-workspace.png)
-
 ---
 
 ## Tabla de Contenidos
