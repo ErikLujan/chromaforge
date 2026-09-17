@@ -54,3 +54,6 @@ components.json
 
 # Dependencies / caches
 .npm/
+
+scripts/
+capturas-chromaforge
