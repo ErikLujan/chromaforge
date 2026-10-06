@@ -1,0 +1,25 @@
+{
+  "name": "ChromaForge",
+  "short_name": "ChromaForge",
+  "description": "Motor de identidad algorítmica: cuestionario, sistema cromático verificado en contraste WCAG AA y libro de marca en PDF.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B0D12",
+  "theme_color": "#0B0D12",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

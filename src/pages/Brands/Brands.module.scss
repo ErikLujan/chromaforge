@@ -22,6 +22,10 @@
   position: relative;
   isolation: isolate;
   width: 100%;
+  // Fluid shell block: fills short viewports, never shrinks below content,
+  // never exceeds the flex column. Grid tracks below are minmax-guarded.
+  flex: 1 0 auto;
+  min-width: 0;
 }
 
 // Faint atmospheric wash + dot field — quieter than the Home hero; the
@@ -120,11 +124,13 @@
 }
 
 .pageTitle {
-  font-family: t.$font-body;
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
-  font-weight: t.$font-weight-bold;
+  font-family: t.$font-display;
+  font-size: t.$font-size-h2;
+  font-weight: t.$font-weight-heading;
+  line-height: t.$line-height-tight;
   letter-spacing: t.$tracking-tight;
   color: t.$color-text-primary;
+  text-wrap: balance;
 
   opacity: 0;
   translate: 0 8px;
@@ -231,6 +237,12 @@
   color: t.$color-text-secondary;
 }
 
+// Section heading — screen-reader-only `h2` so card `h3` titles nest under
+// the page `h1` with no skipped level and zero visual change.
+.sectionHeading {
+  @include m.sr-only;
+}
+
 // ---------------------------------------------------------------------------
 // Card Grid — responsive library
 //
@@ -273,8 +285,12 @@
 // step (0, 55, 105, 150, 190, 225, 255…), so the wave travels fast at first
 // and settles as it crosses the grid — organic, never metronomic — and the
 // tail stays bounded for long libraries (12th card ≈ 330ms).
+//
+// Scale: the pattern cycles every 12 cards (`12n + i`), so libraries of any
+// size replay the same bounded wave per batch — card 13 opens the next wave
+// at 0ms instead of popping in delay-less.
 @for $i from 1 through 12 {
-  .grid > :nth-child(#{$i}) {
+  .grid > :nth-child(12n + #{$i}) {
     --entrance-delay: #{55 * ($i - 1) - math.div(5 * ($i - 2) * ($i - 1), 2)}ms;
   }
 }
@@ -468,7 +484,8 @@
 // State Panels — empty & error first-run surfaces
 // A single calm glass panel: hairline border, gradient hairline on top, one
 // authored entrance. The empty surface invites the first questionnaire; the
-// error surface names the problem and offers a recovery.
+// error surface names the problem and offers a recovery. Content is centered
+// to match the Dashboard's empty/error voice — one product, one posture.
 // ---------------------------------------------------------------------------
 
 .statePanel {
@@ -476,10 +493,11 @@
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: t.$space-4;
   max-width: 36rem;
   margin: 0 auto;
+  text-align: center;
   padding: clamp(2rem, 5vw, 3.5rem) clamp(1.5rem, 4vw, 3rem);
   background: t.$glass-bg;
   border: 1px solid t.$glass-border;
@@ -604,5 +622,13 @@
 
   to {
     background-position: -200% 0;
+  }
+}
+
+// Static skeleton under reduced motion — the loading state stays legible
+// without the travelling sheen.
+@include m.reduced-motion {
+  .skeletonBar {
+    animation: none;
   }
 }

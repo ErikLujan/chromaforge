@@ -70,18 +70,18 @@
 }
 
 // ---------------------------------------------------------------------------
-// Mockup grid — two practical surfaces, stacked on mobile
+// Mockup grid — practical surfaces that stack themselves
 // ---------------------------------------------------------------------------
-
+//
+// Breakpoint-free auto-fit: two mockups side by side wherever ≥19rem each
+// fits, one stacked column everywhere else — inside the narrowed shell
+// column, at 320px, and under zoom, with no query to go stale. Role rows
+// keep ellipsis on the squeeze and full text once wrapped wide; actions wrap
+// to full lines instead of clipping; both mockups carry min-width: 0.
 .mockupGrid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
   gap: t.$space-6;
-
-  @include m.respond-to(t.$breakpoint-lg) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: t.$space-6;
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -181,7 +181,9 @@
 
 .appBody {
   display: grid;
-  grid-template-columns: minmax(96px, 0.9fr) minmax(0, 1.6fr);
+  // Relaxed rail floor — the mockup sidebar yields below 96px at 320px
+  // widths and high zoom while role labels keep their ellipsis.
+  grid-template-columns: minmax(72px, 0.9fr) minmax(0, 1.6fr);
   gap: t.$space-4;
   padding: t.$space-5;
   min-width: 0;
@@ -250,6 +252,7 @@
   font-weight: t.$font-weight-semibold;
   letter-spacing: t.$tracking-tight;
   color: t.$color-text-primary;
+  overflow-wrap: break-word;
 }
 
 .appText {
@@ -363,6 +366,8 @@
   letter-spacing: t.$tracking-tight;
   line-height: t.$line-height-tight;
   color: t.$color-text-primary;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .heroText {

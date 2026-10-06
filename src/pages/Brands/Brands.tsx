@@ -14,6 +14,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useBrandStore } from '@/store/useBrandStore';
 import type { SavedBrand } from '@/store/useBrandStore';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useNoIndex } from '@/hooks/useNoIndex';
 import { useEntrance } from '@/hooks/useEntrance';
 import { useSpotlight } from '@/hooks/useSpotlight';
 import styles from './Brands.module.scss';
@@ -58,6 +59,7 @@ const SKELETON_COUNT = 6;
  */
 export default function Brands() {
   useDocumentTitle('Marcas');
+  useNoIndex();
 
   const navigate = useNavigate();
 
@@ -265,6 +267,7 @@ export default function Brands() {
 
     return (
       <>
+        <h2 className={styles.sectionHeading}>Tus identidades guardadas</h2>
         <p className={styles.libraryCount}>
           {libraryCount}
           <span aria-hidden="true">·</span>

@@ -1,0 +1,229 @@
+// ============================================================================
+// Sidebar.module.scss
+// Workspace rail: off-canvas drawer on mobile, sticky rail on desktop.
+// Consumes design tokens from src/styles/_tokens.scss
+//
+// Mobile-first: the panel parks off-canvas (`translateX(-105%)` +
+// `visibility: hidden`, so nothing focusable or announced lingers) and
+// slides in over a dimmed overlay. On desktop (lg+) it settles into the
+// shell grid as a permanent track-filling rail — the track owns its height.
+// Motion is transform/visibility only (GPU), collapsing under
+// prefers-reduced-motion.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+// Shell constant — the desktop rail track. Declared once, here.
+$sidebar-width: 260px;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: t.$z-overlay;
+  background: rgba(5, 6, 10, 0.62);
+  animation: overlayIn t.$duration-fast t.$ease-out both;
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    display: none;
+  }
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: t.$z-modal;
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-6;
+  width: min(17.5rem, 84vw);
+  padding: t.$space-5 t.$space-4;
+  background-color: t.$color-surface-base;
+  // Whisper top-light settling into obsidian — one static wash that gives
+  // the rail depth without competing with page content. Painted once.
+  background-image: radial-gradient(
+    120% 32% at 50% 0%,
+    rgba(232, 234, 237, 0.06) 0%,
+    transparent 62%
+  );
+  border-right: 1px solid t.$glass-border;
+  transform: translateX(-105%);
+  visibility: hidden;
+  // Visibility flips on a delay when closing so the slide-out is never cut.
+  transition:
+    transform 320ms t.$ease-out-quint,
+    visibility 0s linear 320ms;
+
+  &.open {
+    transform: none;
+    visibility: visible;
+    transition: transform 320ms t.$ease-out-quint;
+  }
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    // Permanent rail: fills the sidebar track exactly (`height: 100%` of
+    // the locked shell) instead of declaring its own viewport height, so it
+    // can never distort the content column's rows. Own scroll as a safety
+    // valve for short viewports.
+    position: relative;
+    top: auto;
+    z-index: auto;
+    height: 100%;
+    max-height: 100dvh;
+    width: auto;
+    overflow-y: auto;
+    transform: none;
+    visibility: visible;
+    transition: none;
+  }
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-3;
+  padding: t.$space-1 t.$space-2;
+  color: t.$color-text-primary;
+  text-decoration: none;
+
+  @include m.focus-ring;
+}
+
+.brandMark {
+  width: 36px;
+  height: 36px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.brandName {
+  font-family: t.$font-body;
+  font-size: t.$font-size-body;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-wide;
+}
+
+.nav {
+  min-width: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  padding: t.$space-3 t.$space-3;
+  border-radius: t.$radius-md;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  text-decoration: none;
+  transition:
+    color t.$transition-fast,
+    background-color t.$transition-fast;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: t.$color-text-muted;
+    transition: color t.$transition-fast;
+  }
+
+  &:hover {
+    color: t.$color-text-primary;
+    background-color: t.$color-bg-interactive;
+  }
+
+  @include m.focus-ring;
+}
+
+.linkActive {
+  color: t.$color-text-primary;
+  background-color: t.$color-bg-interactive;
+
+  svg {
+    color: t.$color-accent-primary;
+  }
+
+  // Signature rail marker — a 2px gradient edge that settles the active
+  // section without shouting. Same voice as the profile tab indicator.
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 22%;
+    bottom: 22%;
+    width: 2px;
+    border-radius: t.$radius-full;
+    background: t.$gradient-primary;
+  }
+}
+
+.sideFooter {
+  margin-top: auto;
+  padding-top: t.$space-4;
+  border-top: 1px solid t.$color-border-subtle;
+}
+
+.docsLink {
+  display: flex;
+  align-items: center;
+  gap: t.$space-2;
+  padding: t.$space-2 t.$space-3;
+  border-radius: t.$radius-md;
+  font-family: t.$font-body;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-muted;
+  text-decoration: none;
+  transition:
+    color t.$transition-fast,
+    background-color t.$transition-fast;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    color: t.$color-text-primary;
+    background-color: t.$color-bg-interactive;
+  }
+
+  @include m.focus-ring;
+}
+
+@include m.reduced-motion {
+  .overlay {
+    animation: none;
+  }
+
+  .sidebar,
+  .sidebar.open {
+    transition: none;
+  }
+}

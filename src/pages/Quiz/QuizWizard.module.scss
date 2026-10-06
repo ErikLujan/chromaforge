@@ -25,6 +25,7 @@
   isolation: isolate;
   width: 100%;
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -166,6 +167,8 @@
   font-size: 12px;
   font-weight: t.$font-weight-medium;
   letter-spacing: 0.08em;
+  // Tabular figures — the step readout must not shift as digits change.
+  font-variant-numeric: tabular-nums;
   color: t.$color-text-secondary;
   white-space: nowrap;
 }
@@ -243,12 +246,26 @@
   transform: translate3d(-28px, 0, 0);
 }
 
+// Direction-aware reverse — backward travel mirrors forward travel (exit
+// right, enter from the left) so the wizard keeps its sense of direction.
+.stageEnteringBack {
+  opacity: 0;
+  transform: translate3d(-28px, 0, 0);
+}
+
+.stageLeavingBack {
+  opacity: 0;
+  transform: translate3d(28px, 0, 0);
+}
+
 // Reduced motion: the drift's spatial component is skipped entirely — the
 // stage still fades (state change must remain perceivable) but never moves.
 @include m.reduced-motion {
   .stage,
   .stageEntering,
-  .stageLeaving {
+  .stageLeaving,
+  .stageEnteringBack,
+  .stageLeavingBack {
     transition: opacity 160ms t.$ease-standard;
     transform: none;
   }
@@ -397,7 +414,7 @@
 // --- Question ---
 
 .question {
-  max-width: 24ch;
+  max-width: clamp(30ch, 100%, 46ch);
   margin: 0 auto;
   font-family: t.$font-display;
   font-size: clamp(1.75rem, 4vw, 2.75rem);
@@ -431,6 +448,37 @@
   }
 }
 
+// Stagger delays — a short cascade per question (55ms steps: present but
+// never sluggish). Each card consumes its delay through `--option-delay`,
+// so the wave replays on every step mount without blocking input.
+.options > :nth-child(1) {
+  --option-delay: 0ms;
+}
+
+.options > :nth-child(2) {
+  --option-delay: 55ms;
+}
+
+.options > :nth-child(3) {
+  --option-delay: 110ms;
+}
+
+.options > :nth-child(4) {
+  --option-delay: 165ms;
+}
+
+@keyframes optionIn {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
 .option {
   position: relative;
   display: flex;
@@ -448,6 +496,12 @@
   -webkit-backdrop-filter: blur(t.$glass-blur);
   box-shadow: t.$shadow-sm;
   cursor: pointer;
+  // Entrance cascade — `backwards` fill paints the `from` frame during the
+  // stagger delay, then releases to natural styles so the hover lift and the
+  // selected state are never overridden after landing. `translate` (not
+  // `transform`) keeps the cascade fully clear of the hover physics.
+  animation: optionIn 340ms t.$ease-out-quint backwards;
+  animation-delay: var(--option-delay, 0ms);
   transition:
     transform t.$transition-premium,
     border-color t.$transition-smooth,
@@ -473,6 +527,8 @@
   @include m.focus-ring;
 
   @include m.reduced-motion {
+    animation: none;
+
     &:hover,
     &:active {
       transform: none;
@@ -530,8 +586,8 @@
   }
 }
 
-@include m.reduced-motion {
-  .optionCheck {
+.optionCheck {
+  @include m.reduced-motion {
     animation: none;
   }
 }
@@ -608,6 +664,12 @@
   border-top: 1px solid t.$color-border-subtle;
 }
 
+.footNav {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-5;
+}
+
 .exit {
   display: inline-flex;
   align-items: center;
@@ -644,10 +706,60 @@
   }
 }
 
+// Quiet step-back control — a ghost beside the exit link, never competing
+// with the option cards. Rests at half opacity, surfaces to full on hover.
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-1;
+  padding: 0;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  opacity: 0.5;
+  transition:
+    opacity t.$transition-fast,
+    color t.$transition-fast;
+
+  &:hover:not(:disabled) {
+    opacity: 1;
+    color: t.$color-text-primary;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  @include m.focus-ring;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    transition: transform t.$transition-fast;
+  }
+
+  &:hover:not(:disabled) svg {
+    transform: translateX(-2px);
+  }
+
+  @include m.reduced-motion {
+    &:hover:not(:disabled) svg {
+      transform: none;
+    }
+  }
+}
+
 .hint {
   font-size: t.$font-size-xs;
   color: t.$color-text-muted;
-  max-width: none;
+  // Capped measure keeps the wrapped line a quiet aside, never a paragraph.
+  max-width: 32ch;
+  text-wrap: balance;
 }
 
 // ---------------------------------------------------------------------------
@@ -712,14 +824,59 @@
   max-width: 32ch;
 }
 
-.completionSpinner {
+// Forge loader — five dots for the five palette roles being computed. A
+// travelling pulse (staggered scale + opacity) reads as work in progress,
+// not as a generic spinner. Small elements, compositor-only properties.
+.forgeLoader {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-2;
   margin-top: t.$space-2;
-  color: t.$color-accent-cyan;
-  animation: spin 800ms linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+.forgeLoaderDot {
+  width: 8px;
+  height: 8px;
+  border-radius: t.$radius-full;
+  background: t.$color-accent-cyan;
+  opacity: 0.25;
+  animation: forgePulse 1.2s t.$ease-standard infinite;
+
+  &:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  &:nth-child(4) {
+    animation-delay: 0.45s;
+  }
+
+  &:nth-child(5) {
+    animation-delay: 0.6s;
+  }
+}
+
+@keyframes forgePulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+    box-shadow: 0 0 12px rgba(232, 234, 237, 0.35);
+  }
+}
+
+@include m.reduced-motion {
+  .forgeLoaderDot {
+    animation: none;
+    opacity: 0.6;
+    transform: none;
   }
 }

@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, LogOut, User, X } from 'lucide-react';
 import clsx from 'clsx';
 import { toast } from 'sonner';
 import ChromaForgeIcon from '@/components/brand/ChromaForgeIcon';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useMotionStore } from '@/store/useMotionStore';
 import { useSpotlight } from '@/hooks/useSpotlight';
 import styles from './Header.module.scss';
 
@@ -58,7 +60,7 @@ interface AvatarDropdownProps {
  *
  * @returns {JSX.Element} The avatar button and its dropdown.
  */
-function AvatarDropdown({ name, email, avatarUrl, onSignOut }: AvatarDropdownProps) {
+export function AvatarDropdown({ name, email, avatarUrl, onSignOut }: AvatarDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -116,7 +118,13 @@ function AvatarDropdown({ name, email, avatarUrl, onSignOut }: AvatarDropdownPro
       >
         <span className={styles.avatar}>
           {avatarUrl ? (
-            <img src={avatarUrl} alt="" className={styles.avatarImage} />
+            <img
+              src={avatarUrl}
+              alt=""
+              className={styles.avatarImage}
+              width={32}
+              height={32}
+            />
           ) : (
             <span className={styles.avatarInitials}>{initials}</span>
           )}
@@ -182,6 +190,8 @@ export default function Header() {
   const isLoading = useAuthStore((state) => state.isLoading);
   const signOut = useAuthStore((state) => state.signOut);
   const navigate = useNavigate();
+  const location = useLocation();
+  const motionReduced = useMotionStore((state) => state.reduced);
 
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -211,6 +221,25 @@ export default function Header() {
   const closeMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(false);
   }, []);
+
+  /**
+   * Brand navigation with a top guarantee. Cross-route clicks ride the
+   * router (ScrollRestoration snaps to the top); same-route clicks trigger
+   * no navigation, so the climb happens manually — smooth unless motion is
+   * held. Also closes the mobile drawer, covering the drawer brand mark.
+   *
+   * @param {ReactMouseEvent<HTMLAnchorElement>} event The brand click event.
+   * @returns {void}
+   */
+  const handleBrandClick = useCallback(
+    (event: ReactMouseEvent<HTMLAnchorElement>) => {
+      closeMobileMenu();
+      if (location.pathname !== '/') return;
+      event.preventDefault();
+      window.scrollTo({ top: 0, left: 0, behavior: motionReduced ? 'auto' : 'smooth' });
+    },
+    [closeMobileMenu, location.pathname, motionReduced],
+  );
 
   /**
    * Signs the current user out, notifies them, and returns to the auth page
@@ -281,7 +310,12 @@ export default function Header() {
   return (
     <header role="banner" className={styles.header}>
       <div className={styles.container}>
-        <Link to="/" className={styles.brand} aria-label="Inicio de ChromaForge">
+        <Link
+          to="/"
+          className={styles.brand}
+          aria-label="Inicio de ChromaForge"
+          onClick={handleBrandClick}
+        >
           <span className={styles.brandMark} aria-hidden="true">
             <ChromaForgeIcon size={40} className={styles.brandMarkIcon} />
           </span>
@@ -368,7 +402,7 @@ export default function Header() {
                 to="/"
                 className={styles.brand}
                 aria-label="Inicio de ChromaForge"
-                onClick={closeMobileMenu}
+                onClick={handleBrandClick}
               >
                 <span className={styles.brandMark} aria-hidden="true">
                   <ChromaForgeIcon size={40} className={styles.brandMarkIcon} />
@@ -408,7 +442,14 @@ export default function Header() {
                 <div className={styles.drawerUser}>
                   <span className={styles.avatar}>
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt="" className={styles.avatarImage} />
+                      <img
+                        src={avatarUrl}
+                        alt=""
+                        className={styles.avatarImage}
+                        width={32}
+                        height={32}
+                        loading="lazy"
+                      />
                     ) : (
                       <span className={styles.avatarInitials}>
                         {getInitials(displayName, email)}

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useMotionStore } from '@/store/useMotionStore';
 import styles from './AuroraField.module.scss';
 
 /**
@@ -7,8 +8,7 @@ import styles from './AuroraField.module.scss';
  * Three layers in a single low-res 2D canvas pass: drifting radial aurora
  * washes with cursor parallax (three blobs on desktop, two on mobile),
  * a cursor glow that fades in on first move and out when the pointer leaves,
- * and a drifting particle network with proximity and cursor links that runs
- * continuously for every visitor from the first frame.
+ * and a drifting particle network with proximity and cursor links.
  *
  * Performance budget: 2D canvas only with the backing store near half CSS
  * size and DPR capped at 1 so the browser upscale acts as a free blur; one
@@ -18,8 +18,15 @@ import styles from './AuroraField.module.scss';
  * pointers; off-screen and hidden-tab pausing. OffscreenCanvas was evaluated
  * and rejected: worker transfer exceeds the win at this fill count.
  *
- * Motion contract: the loop runs continuously for every visitor with no
- * reduced-motion branch; pausing below is pure frame-budget savings.
+ * Motion contract: the loop runs for visitors without a reduced-motion
+ * preference. When the OS `prefers-reduced-motion: reduce` matches — or the
+ * manual MotionToggle override flips — the canvas paints a single static
+ * radial wash (positioned blobs only, fixed time, no particles, no parallax,
+ * no loop) and repaints only on resize or tint change.
+ *
+ * Tint contract: an optional live `tintColor` (the MiniForja primary) tints
+ * one wash — the second desktop blob, the first mobile blob — capped at 8%
+ * alpha, so the field echoes the generator output without competing with it.
  */
 
 interface Blob {
@@ -154,14 +161,54 @@ const CURSOR_LINK_STYLES = [
   'rgba(255, 255, 255, 0.36)',
 ];
 
+/** Props for the aurora field. */
+interface AuroraFieldProps {
+  /** Live primary color echoing the generator output (uppercase HEX). */
+  readonly tintColor?: string;
+}
+
+/** Maximum alpha for the tinted wash — the field stays subordinate. */
+const TINT_ALPHA_CAP = 0.08;
+
+/**
+ * Reports whether a value is a six-digit HEX color.
+ *
+ * @param {string | undefined} value The value to test.
+ * @returns {boolean} `true` for `#rrggbb` strings.
+ */
+function isHexColor(value: string | undefined): value is string {
+  return typeof value === 'string' && /^#(?:[0-9a-fA-F]{6})$/.test(value);
+}
+
+/**
+ * Tints one wash of a blob list with the live generator color.
+ *
+ * Desktop tints the second blob; the two-blob mobile list tints the first.
+ * Invalid input returns the list untouched.
+ *
+ * @param {readonly Blob[]} list The base blob list.
+ * @param {string | undefined} tint The live primary color.
+ * @returns {readonly Blob[]} The blob list with one tinted wash.
+ */
+function applyTint(list: readonly Blob[], tint: string | undefined): readonly Blob[] {
+  if (!isHexColor(tint)) return list;
+  return list.map((blob, index) => {
+    const shouldTint = list.length === 2 ? index === 0 : index === 1;
+    if (!shouldTint) return blob;
+    return { ...blob, color: tint, alpha: Math.min(blob.alpha, TINT_ALPHA_CAP) };
+  });
+}
+
 /**
  * Renders the interactive aurora canvas field.
  *
+ * @param {AuroraFieldProps} props The field configuration.
  * @returns {JSX.Element} The canvas host element.
  */
-export default function AuroraField() {
+export default function AuroraField({ tintColor }: AuroraFieldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
+  const motionReduced = useMotionStore((state) => state.reduced);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -174,7 +221,7 @@ export default function AuroraField() {
     let raf = 0;
     let running = true;
     let visible = true;
-    let blobs: readonly Blob[] = BLOBS_DESKTOP;
+    let blobs: readonly Blob[] = applyTint(BLOBS_DESKTOP, tintColor);
     let particles: Particle[] = [];
     let linkDist = 60;
     let cursorLinkDist = 110;
@@ -208,7 +255,7 @@ export default function AuroraField() {
       const cssW = Math.max(1, Math.round(rect.width));
       const cssH = Math.max(1, Math.round(rect.height));
       const mobile = cssW < 700;
-      blobs = mobile ? BLOBS_MOBILE : BLOBS_DESKTOP;
+      blobs = applyTint(mobile ? BLOBS_MOBILE : BLOBS_DESKTOP, tintColor);
       const width = Math.max(2, Math.round(cssW * RENDER_SCALE));
       const height = Math.max(2, Math.round(cssH * RENDER_SCALE));
       canvas.width = width;
@@ -394,7 +441,57 @@ export default function AuroraField() {
       raf = requestAnimationFrame(loop);
     };
 
+    /**
+     * Paints the reduced-motion static wash: positioned blobs at a fixed
+     * time, no particles, no cursor glow, no drift.
+     */
+    const paintStatic = () => {
+      const w = canvas.width;
+      const h = canvas.height;
+      if (w < 2 || h < 2) return;
+      const minDim = Math.min(w, h);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = BASE_BG;
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'lighter';
+      const t = 2.0;
+      for (const blob of blobs) {
+        const driftX = Math.sin(t * blob.speed + blob.phase) * blob.axRatio;
+        const driftY = Math.cos(t * blob.speed * 1.15 + blob.phase) * blob.ayRatio;
+        const x = (blob.cxRatio + driftX) * w;
+        const y = (blob.cyRatio + driftY) * h;
+        const r = blob.radiusRatio * minDim * 1.6;
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, r);
+        gradient.addColorStop(0, rgba(blob.color, blob.alpha));
+        gradient.addColorStop(1, rgba(blob.color, 0));
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x - r, y - r, r * 2, r * 2);
+      }
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+    };
+
+    let osReducedMotion: boolean;
+    try {
+      osReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      osReducedMotion = false;
+    }
+    const prefersReducedMotion = motionReduced || osReducedMotion;
+
     resize();
+    if (prefersReducedMotion) {
+      paintStatic();
+      const staticObserver = new ResizeObserver(() => {
+        resize();
+        paintStatic();
+      });
+      staticObserver.observe(host);
+      return () => {
+        running = false;
+        staticObserver.disconnect();
+      };
+    }
     startLoop();
 
     const resizeObserver = new ResizeObserver(() => {
@@ -456,7 +553,7 @@ export default function AuroraField() {
       document.documentElement.removeEventListener('pointerleave', onPointerLeave);
       window.removeEventListener('blur', onPointerLeave);
     };
-  }, []);
+  }, [tintColor, motionReduced]);
 
   return (
     <div ref={hostRef} className={styles.field} aria-hidden="true">

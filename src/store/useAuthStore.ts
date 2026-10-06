@@ -37,6 +37,12 @@ interface AuthState {
   /** `true` while the initial session restore is in flight. */
   isLoading: boolean;
   /**
+   * `true` while the login/logout transition veil masks the layout
+   * reconciliation behind it. Raised by `signIn`/`signOut` for one fixed
+   * beat, then lowered automatically — never toggled by views.
+   */
+  isTransitioning: boolean;
+  /**
    * Replaces the current session. Also updates `user` and marks the store as
    * no longer loading. Pass `null` to clear auth state.
    */
@@ -81,7 +87,7 @@ interface AuthState {
    * @returns {Promise<SignUpResult>} The created user, session and error.
    */
   signUp: (email: string, password: string, name?: string) => Promise<SignUpResult>;
-  /** Signs the current user out and clears the store. */
+  /** Signs the current user out, clears the store, and masks the layout switch with the transition veil. */
   signOut: () => Promise<void>;
 }
 
@@ -89,7 +95,34 @@ const initialState = {
   session: null,
   user: null,
   isLoading: true,
+  isTransitioning: false,
 };
+
+/** Duration of the login/logout transition veil, in milliseconds. */
+const TRANSITION_MS = 1300;
+
+let transitionTimer: number | null = null;
+
+/**
+ * Raises the transition veil for one fixed beat so the layout switch lands
+ * behind it. Re-entrant: a new flash replaces a pending one instead of
+ * stacking timers.
+ *
+ * // WHY: called only from signIn/signOut — initialize, onAuthStateChange,
+ * // signUp and every other writer never flash, so boot, silent restore and
+ * // route changes cannot leak the veil outside explicit login/logout.
+ *
+ * @param {Function} set The store setter.
+ * @returns {void}
+ */
+function flashTransition(set: (partial: Partial<AuthState>) => void): void {
+  if (transitionTimer !== null) window.clearTimeout(transitionTimer);
+  set({ isTransitioning: true });
+  transitionTimer = window.setTimeout(() => {
+    transitionTimer = null;
+    set({ isTransitioning: false });
+  }, TRANSITION_MS);
+}
 
 export const useAuthStore = create<AuthState>()((set) => ({
   ...initialState,
@@ -137,6 +170,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
         user: data.session.user,
         isLoading: false,
       });
+      flashTransition(set);
       void flushPendingAvatar(data.session.user.id, email);
     }
 
@@ -165,5 +199,6 @@ export const useAuthStore = create<AuthState>()((set) => ({
   signOut: async () => {
     await supabase.auth.signOut();
     set({ session: null, user: null });
+    flashTransition(set);
   },
 }));

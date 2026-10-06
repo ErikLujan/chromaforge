@@ -9,6 +9,7 @@ import AsyncButton from '@/components/ui/AsyncButton';
 import { supabase } from '@/services/supabase.client';
 import { AUTH_GENERIC_ERROR, getAuthErrorMessage } from '@/utils/auth.utils';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useNoIndex } from '@/hooks/useNoIndex';
 import { useEntrance } from '@/hooks/useEntrance';
 import { useSpotlight } from '@/hooks/useSpotlight';
 import styles from './ForgotPassword.module.scss';
@@ -29,6 +30,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ForgotPassword() {
   useDocumentTitle('Recuperar contraseña');
+  useNoIndex();
 
   const entered = useEntrance();
   const handleSpotlight = useSpotlight<HTMLButtonElement>();
@@ -71,7 +73,10 @@ export default function ForgotPassword() {
   };
 
   return (
-    <section className={styles.page} aria-labelledby="forgot-password-title">
+    <section
+      className={styles.page}
+      aria-labelledby={sent ? 'forgot-password-title-sent' : 'forgot-password-title'}
+    >
       <div className={clsx(styles.panel, entered && styles.entered)}>
         <Link to="/" className={styles.brand} aria-label="ChromaForge, ir al inicio">
           <ChromaForgeIcon size={36} className={styles.brandMark} />
@@ -84,7 +89,7 @@ export default function ForgotPassword() {
               <MailCheck size={22} />
             </span>
             <p className={styles.eyebrow}>Enlace enviado</p>
-            <h1 id="forgot-password-title" className={styles.title}>
+            <h1 id="forgot-password-title-sent" className={styles.title}>
               Revisa tu correo
             </h1>
             <p className={styles.subtitle}>

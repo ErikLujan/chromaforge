@@ -21,6 +21,12 @@
   margin-inline: auto;
   padding: clamp(1rem, 2.5vw, 2rem) clamp(1rem, 3vw, 2.5rem)
     clamp(2.5rem, 5vw, 4rem);
+  // Containment for the off-screen export stage (absolute, -20000px,
+  // thousands of px tall): without it the invisible capture sheet extends
+  // the document's scrollable area into a black void. `clip` (not `hidden`)
+  // creates no scroll container, disturbs no sticky descendants (there are
+  // none), and leaves the capture node itself untouched for html-to-image.
+  overflow: clip;
 }
 
 // Quiet atmospheric wash + dot field — calmer than the Dashboard hero; the
@@ -194,8 +200,11 @@
 .toolbarActions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: t.$space-2;
   gap: t.$space-3;
   margin-left: auto;
+  min-width: 0;
 }
 
 // Compartir remains a placeholder — clearly inactive so it never pretends to
@@ -360,19 +369,22 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: t.$space-4;
   margin-top: t.$space-4;
   align-items: start;
 
   @include m.respond-to(t.$breakpoint-md) {
-    grid-template-columns: 220px minmax(0, 1fr);
     gap: t.$space-5;
     margin-top: t.$space-5;
   }
 
-  @include m.respond-to(t.$breakpoint-lg) {
-    grid-template-columns: 280px minmax(0, 1fr);
+  // Side rail only once the column truly fits it: below xl the views ride
+  // the full canvas width with the tab strip on top. Viewport-keyed inner
+  // columns inside the sidebar-narrowed shell are what squeezed text into
+  // one-word lines — never again.
+  @include m.respond-to(t.$breakpoint-xl) {
+    grid-template-columns: 260px minmax(0, 1fr);
     gap: t.$space-6;
     margin-top: t.$space-6;
   }
@@ -392,7 +404,7 @@
 .sidebarLabel {
   display: none;
 
-  @include m.respond-to(t.$breakpoint-md) {
+  @include m.respond-to(t.$breakpoint-xl) {
     display: block;
     padding-inline: t.$space-2;
     font-family: t.$font-mono;
@@ -417,7 +429,7 @@
     display: none;
   }
 
-  @include m.respond-to(t.$breakpoint-md) {
+  @include m.respond-to(t.$breakpoint-xl) {
     flex-direction: column;
     overflow-x: visible;
     padding: t.$space-2;
@@ -433,7 +445,9 @@
   display: flex;
   align-items: center;
   gap: t.$space-3;
-  width: 100%;
+  // Intrinsic pill in the mobile scroll strip — never stretched, never
+  // squished; full row width only once the rail turns vertical.
+  flex: 0 0 auto;
   padding: t.$space-3;
   border: 1px solid transparent;
   border-radius: t.$radius-md;
@@ -459,6 +473,13 @@
   color: t.$color-text-primary;
 }
 
+@include m.respond-to(t.$breakpoint-md) {
+  // Vertical rail — items fill the track width.
+  .sidebarItem {
+    width: 100%;
+  }
+}
+
 .sidebarItemText {
   display: flex;
   flex-direction: column;
@@ -476,7 +497,7 @@
 .sidebarItemHint {
   display: none;
 
-  @include m.respond-to(t.$breakpoint-md) {
+  @include m.respond-to(t.$breakpoint-xl) {
     display: block;
     font-family: t.$font-mono;
     font-size: 10px;
@@ -526,6 +547,7 @@
 
 .stageNote {
   margin-top: t.$space-5;
+  max-width: 68ch;
   font-family: t.$font-mono;
   font-size: 11px;
   letter-spacing: 0.04em;
@@ -548,11 +570,14 @@
   border: 1px solid t.$glass-border;
   box-shadow: t.$shadow-md;
 
-  // Desktop: both columns stretch to the row height so the palette swatches
-  // bottom-align through `.brandPalette`'s `margin-top: auto` — the hero card
-  // reads as one cohesive unit with no stray gap below the metadata.
+  // Row on roomy canvases — with a wrap fuse: the meta and palette carry
+  // row-only flex bases below, so a narrowed shell column drops the palette
+  // to its own full-width line instead of crushing the title into mid-word
+  // breaks or overlapping the swatches. Bottom-alignment via
+  // `.brandPalette`'s `margin-top: auto` still holds on the single line.
   @include m.respond-to(t.$breakpoint-md) {
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: stretch;
     gap: clamp(1.5rem, 3vw, 2.5rem);
   }
@@ -591,6 +616,19 @@
   flex: 1;
 }
 
+@include m.respond-to(t.$breakpoint-md) {
+  // Row-only wrap fuses (scoped here so the mobile column keeps its natural
+  // heights): meta claims a readable measure, palette a swatch-fitting one —
+  // whichever stops fitting drops to a full-width line, never overlaps.
+  .brandMeta {
+    flex: 1 1 20rem;
+  }
+
+  .brandPalette {
+    flex: 1 1 14rem;
+  }
+}
+
 .brandEyebrow {
   font-family: t.$font-mono;
   font-size: 10px;
@@ -607,6 +645,8 @@
   letter-spacing: t.$tracking-tight;
   line-height: t.$line-height-tight;
   color: t.$color-text-primary;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .brandTagline {
@@ -618,17 +658,17 @@
 }
 
 .brandPalette {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: clamp(0.75rem, 1.5vw, 1.25rem);
   list-style: none;
   margin: 0;
   margin-top: auto;
   padding: 0;
+  min-width: 0;
 }
 
 .brandPaletteItem {
-  flex: 1 1 90px;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -797,7 +837,7 @@
 }
 
 .exportMeta {
-  max-width: 72ch;
+  max-width: 68ch;
   font-family: t.$font-body;
   font-size: t.$font-size-small;
   line-height: t.$line-height-relaxed;

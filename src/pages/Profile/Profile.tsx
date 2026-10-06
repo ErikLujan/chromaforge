@@ -36,6 +36,7 @@ import {
 import type { CroppedAvatar } from '@/services/avatar.service';
 import { sanitizeText } from '@/utils/sanitization.utils';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useNoIndex } from '@/hooks/useNoIndex';
 import { useEntrance } from '@/hooks/useEntrance';
 import { useSpotlight } from '@/hooks/useSpotlight';
 import styles from './Profile.module.scss';
@@ -361,7 +362,13 @@ function AvatarManager() {
 
         <div className={styles.avatarPreview}>
           {previewUrl ? (
-            <img src={previewUrl} alt="" className={styles.avatarImage} />
+            <img
+              src={previewUrl}
+              alt=""
+              className={styles.avatarImage}
+              width={88}
+              height={88}
+            />
           ) : (
             <span className={styles.avatarInitials}>
               {getInitials(displayName, email)}
@@ -1017,6 +1024,7 @@ function PeligroTab() {
  */
 export default function Profile() {
   useDocumentTitle('Mi Perfil');
+  useNoIndex();
 
   const [activeTab, setActiveTab] = useState<ProfileTabId>('perfil');
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);

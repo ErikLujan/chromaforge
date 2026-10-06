@@ -1,0 +1,418 @@
+// ============================================================================
+// SectionContrastLab.module.scss
+// Section 03 — split workbench: role pickers + living specimen.
+// Monochrome controls; the pair under test owns every hue via inline styles.
+// ============================================================================
+
+@use '../../../styles/tokens' as t;
+@use '../../../styles/mixins' as m;
+
+.section {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+  border-top: 1px solid t.$color-border-subtle;
+}
+
+.inner {
+  width: 100%;
+  max-width: t.$breakpoint-2xl;
+  margin: 0 auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  min-width: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Scroll reveal — fade + rise, staggered (transform/opacity only)
+// ---------------------------------------------------------------------------
+
+.revealItem {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 280ms t.$ease-out-quint,
+    transform 280ms t.$ease-out-quint;
+}
+
+[data-revealed] .revealItem {
+  opacity: 1;
+  transform: none;
+}
+
+@include m.reduced-motion {
+  .revealItem {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Head block
+// ---------------------------------------------------------------------------
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.875rem, 2vw, 1.25rem);
+  min-width: 0;
+  max-width: 44rem;
+}
+
+.title {
+  font-family: t.$font-display;
+  font-size: clamp(1.75rem, 3vw, 2.75rem);
+  font-weight: t.$font-weight-display;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: t.$color-text-primary;
+  text-wrap: balance;
+}
+
+.lede {
+  font-family: t.$font-body;
+  font-size: clamp(0.95rem, 1.4vw, 1.0625rem);
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 60ch;
+}
+
+// ---------------------------------------------------------------------------
+// Workbench — controls 5 / specimen 7 on desktop, stacked on mobile
+// ---------------------------------------------------------------------------
+
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1rem, 3vw, 1.5rem);
+  min-width: 0;
+
+  @media (min-width: t.$breakpoint-lg) {
+    grid-template-columns: 5fr 7fr;
+    align-items: start;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+  }
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  min-width: 0;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border-radius: t.$radius-lg;
+  @include m.glass-surface;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+  min-width: 0;
+}
+
+.label {
+  font-family: t.$font-body;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+}
+
+.roleList {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+  min-width: 0;
+}
+
+.roleButton {
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  width: 100%;
+  min-width: 0;
+  padding: t.$space-2 t.$space-3;
+  background: transparent;
+  border: 1px solid t.$color-border-subtle;
+  border-radius: t.$radius-md;
+  cursor: pointer;
+  // Magnetic pull composes with lift and press — GPU transform only.
+  transform: translate(var(--mx, 0px), var(--my, 0px));
+  transition:
+    transform 140ms t.$ease-out,
+    border-color t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &:hover {
+    border-color: t.$color-border-strong;
+    transform: translate(var(--mx, 0px), calc(var(--my, 0px) - 1px));
+  }
+
+  &:active {
+    transform: translate(var(--mx, 0px), var(--my, 0px)) scale(0.98);
+  }
+
+  &[data-active] {
+    background: t.$color-bg-interactive;
+    border-color: t.$color-border-highlight;
+  }
+
+  @include m.focus-ring;
+
+  @include m.reduced-motion {
+    transform: none;
+    transition: none;
+  }
+}
+
+.roleDot {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  border-radius: t.$radius-full;
+  border: 1px solid t.$color-border-subtle;
+  transition: background-color t.$transition-fast;
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+.roleLabel {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roleHex {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  font-variant-numeric: tabular-nums;
+  color: t.$color-text-muted;
+  background: none;
+  padding: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Correction switch — transform-only knob
+// ---------------------------------------------------------------------------
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-3;
+  min-width: 0;
+  padding-top: t.$space-2;
+  border-top: 1px solid t.$color-border-subtle;
+}
+
+.switchText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.switchLabel {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: t.$color-text-primary;
+}
+
+.switchHint {
+  font-family: t.$font-body;
+  font-size: t.$font-size-xs;
+  color: t.$color-text-muted;
+}
+
+.switch {
+  position: relative;
+  width: 2.75rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  border: 1px solid t.$color-border-default;
+  border-radius: t.$radius-full;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    border-color t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &[data-on] {
+    background: t.$color-bg-interactive;
+    border-color: t.$color-border-highlight;
+  }
+
+  @include m.focus-ring;
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+.switchKnob {
+  position: absolute;
+  top: 50%;
+  left: 0.1875rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: t.$radius-full;
+  background: t.$color-text-secondary;
+  transform: translateY(-50%);
+  transition: transform 160ms t.$ease-out;
+
+  [data-on] > & {
+    transform: translateY(-50%) translateX(1.25rem);
+    background: #f2f3f5;
+  }
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Specimen — the pair under test, rendered live
+// ---------------------------------------------------------------------------
+
+.specimen {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(0.75rem, 2vw, 1rem);
+  min-width: 0;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: t.$radius-lg;
+  border: 1px solid t.$color-border-subtle;
+  transition: background-color 200ms ease-out;
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+.specimenCaption {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  opacity: 0.72;
+}
+
+.specimenTitle {
+  font-family: t.$font-display;
+  font-size: clamp(1.375rem, 2.6vw, 2rem);
+  font-weight: t.$font-weight-display;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  transition: color 200ms ease-out;
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+.specimenBody {
+  font-family: t.$font-body;
+  font-size: clamp(0.9rem, 1.3vw, 1rem);
+  line-height: t.$line-height-relaxed;
+  max-width: 52ch;
+  transition: color 200ms ease-out;
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+.specimenCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: t.$space-2;
+  padding: t.$space-3 t.$space-6;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  border-radius: t.$radius-sm;
+  text-decoration: none;
+  white-space: nowrap;
+  max-width: 100%;
+  transition:
+    transform t.$transition-fast,
+    background-color 200ms ease-out,
+    color 200ms ease-out;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  @include m.focus-ring;
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+.readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: t.$space-2 t.$space-3;
+  margin-top: t.$space-2;
+  min-width: 0;
+}
+
+.ratio {
+  font-family: t.$font-mono;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: t.$font-weight-semibold;
+  font-variant-numeric: tabular-nums;
+  transition: color 200ms ease-out;
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+.aaPill {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-1;
+  padding: t.$space-1 t.$space-3;
+  font-family: t.$font-body;
+  font-size: t.$font-size-xs;
+  font-weight: t.$font-weight-semibold;
+  color: #0a0a0b;
+  background: t.$color-success;
+  border: 1px solid transparent;
+  border-radius: t.$radius-full;
+  white-space: nowrap;
+
+  &:not([data-pass]) {
+    color: inherit;
+    background: transparent;
+  }
+}
+
+.delta {
+  flex-basis: 100%;
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}

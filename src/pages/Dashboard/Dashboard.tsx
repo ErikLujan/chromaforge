@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { AlertTriangle, MousePointerClick, Palette, Sparkles } from 'lucide-react';
+import { AlertTriangle, MousePointerClick, Palette, Sparkles, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import ResultsWorkspace from '@/components/results/ResultsWorkspace';
 import Modal from '@/components/ui/Modal';
@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useBrandStore } from '@/store/useBrandStore';
 import type { SavedBrand } from '@/store/useBrandStore';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useNoIndex } from '@/hooks/useNoIndex';
 import { useSpotlight } from '@/hooks/useSpotlight';
 import styles from './Dashboard.module.scss';
 
@@ -85,6 +86,7 @@ const SKELETON_ROWS = 6;
  */
 export default function Dashboard() {
   useDocumentTitle('Panel');
+  useNoIndex();
 
   const handleSpotlight = useSpotlight<HTMLButtonElement>();
 
@@ -129,6 +131,22 @@ export default function Dashboard() {
     setIsDeleting(false);
     setBrandToDelete(null);
   }, [brandToDelete, isDeleting, deleteBrand]);
+
+  /**
+   * Copies a palette HEX value to the clipboard and confirms with a toast.
+   *
+   * @param {string} hex The HEX value to copy.
+   * @returns {Promise<void>}
+   */
+  const copyHex = useCallback(async (hex: string) => {
+    try {
+      if (!navigator.clipboard) throw new Error('clipboard-unsupported');
+      await navigator.clipboard.writeText(hex);
+      toast.success(`HEX ${hex} copiado.`);
+    } catch {
+      toast.error('No se pudo copiar el HEX.');
+    }
+  }, []);
 
   if (activePalette) {
     return (
@@ -189,12 +207,6 @@ export default function Dashboard() {
           <div className={styles.metric}>
             <dt className={styles.metricLabel}>Identidades</dt>
             <dd className={styles.metricValue}>{savedBrands.length}</dd>
-          </div>
-          <div className={styles.metric}>
-            <dt className={styles.metricLabel}>Paletas generadas</dt>
-            <dd className={clsx(styles.metricValue, styles.metricValueAccent)}>
-              {savedBrands.length}
-            </dd>
           </div>
           <div className={styles.metric}>
             <dt className={styles.metricLabel}>Tonos en biblioteca</dt>
@@ -326,7 +338,15 @@ export default function Dashboard() {
                           <span className={styles.detailSwatchRole}>
                             {ROLE_LABELS[index] ?? `Tono ${index + 1}`}
                           </span>
-                          <code className={styles.detailHex}>{color}</code>
+                          <button
+                            type="button"
+                            className={styles.detailHex}
+                            onClick={() => void copyHex(color)}
+                            title="Copiar HEX"
+                            aria-label={`Copiar ${color} al portapapeles`}
+                          >
+                            {color}
+                          </button>
                         </li>
                       ))}
                     </ul>
@@ -386,12 +406,12 @@ export default function Dashboard() {
         {brandToDelete ? (
           <div className={styles.confirm}>
             <span className={styles.confirmIcon} aria-hidden="true">
-              <AlertTriangle size={20} />
+              <Trash2 size={20} />
             </span>
             <div className={styles.confirmText}>
               <p className={styles.confirmTitle}>¿Eliminar «{brandToDelete.name}»?</p>
               <p className={styles.confirmDescription}>
-                Esta acción borra la identidad de tu biblioteca de forma permanente. No se puede
+                ¿Estás seguro de que deseas eliminar esta identidad? Esta acción no se puede
                 deshacer.
               </p>
             </div>

@@ -154,8 +154,10 @@ export const useBrandStore = create<BrandState>()((set) => ({
           ? buildBrandIdentity(answers)
           : buildBrandPalette(baseColor);
       set({ activePalette: palette, isGenerating: false });
-    } catch {
-      set({ isGenerating: false });
+    } catch (error) {
+      console.error('Brand Generation Error:', error);
+      set({ isGenerating: false, brandsError: 'No se pudo generar la identidad.' });
+      toast.error('No se pudo generar la identidad.');
     }
   },
 

@@ -1,0 +1,254 @@
+// ============================================================================
+// DashboardLayout.module.scss
+// Enterprise workspace shell: sidebar rail + context topbar + routed main +
+// minimal footer. Consumes design tokens from src/styles/_tokens.scss
+//
+// Grid contract (mobile-first, no horizontal overflow — `overflow-x: clip`):
+//   mobile → single column: topbar / main / footer.
+//   desktop (lg+) → `260px minmax(0, 1fr)` tracks: the sticky sidebar rail
+//     beside the content column. The topbar keeps the `$header-height`
+//     contract (64px) so page-level sticky offsets below it stay valid.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+.layout {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'topbar'
+    'main'
+    'footer';
+  overflow-x: clip;
+  background: t.$color-bg-primary;
+
+  // Desktop: isolated column model. The sidebar owns the left track; the
+  // right track is a single `content` column with its own internal scroll —
+  // sidebar height can never participate in the content rows, which is what
+  // made the 2D spanned grid push `main` below the fold. The shell locks to
+  // exactly one viewport; only `.main` scrolls.
+  @include m.respond-to(t.$breakpoint-lg) {
+    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'sidebar content';
+    height: 100dvh;
+    overflow: hidden;
+  }
+}
+
+// Content column — dissolves on mobile (`display: contents` keeps the
+// single-column grid byte-identical); becomes the isolated flex column on
+// desktop: topbar (auto), main (scroll), footer (auto).
+.content {
+  display: contents;
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    grid-area: content;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Topbar — sticky context bar: menu trigger, breadcrumbs, avatar
+// ---------------------------------------------------------------------------
+
+.topbar {
+  grid-area: topbar;
+  position: sticky;
+  top: 0;
+  z-index: t.$z-sticky;
+  display: flex;
+  align-items: center;
+  gap: t.$space-3;
+  flex-shrink: 0;
+  min-width: 0;
+  height: t.$header-height;
+  padding-inline: clamp(1rem, 3vw, 1.75rem);
+  // Translucent obsidian over the scrolling canvas — blur is functional
+  // here (sticky legibility), not decoration.
+  background: rgba(10, 10, 11, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid t.$color-border-subtle;
+
+  // Silver hairline settling the bar's lower edge — mirrors the card top
+  // hairline language, giving the topbar depth beyond its blur.
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(232, 234, 237, 0.35),
+      rgba(185, 189, 199, 0.28),
+      transparent
+    );
+    pointer-events: none;
+  }
+}
+
+.menuButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  // 44px touch target — meets the shell's minimum press size.
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  padding: 0;
+  color: t.$color-text-secondary;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: t.$radius-md;
+  cursor: pointer;
+  transition:
+    color t.$transition-fast,
+    background-color t.$transition-fast,
+    border-color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-text-primary;
+    background-color: t.$color-bg-interactive;
+    border-color: t.$color-border-subtle;
+  }
+
+  @include m.focus-ring;
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    display: none;
+  }
+}
+
+.crumbs {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.crumbList {
+  display: flex;
+  align-items: center;
+  gap: t.$space-2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.crumbItem {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-2;
+  min-width: 0;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+}
+
+.crumbLink {
+  flex-shrink: 0;
+  color: t.$color-text-muted;
+  text-decoration: none;
+  transition: color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-text-primary;
+  }
+
+  @include m.focus-ring;
+}
+
+.crumbSeparator {
+  color: t.$color-text-disabled;
+}
+
+.crumbCurrent {
+  font-weight: t.$font-weight-semibold;
+  color: t.$color-text-primary;
+  @include m.truncate;
+}
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.topbarPlaceholder {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: t.$radius-full;
+}
+
+// ---------------------------------------------------------------------------
+// Main — routed workspace inside the isolated content column
+//
+// Fluid block: `min-height: 0` defers to the flex column, so pages size
+// naturally and the shell scrolls as one document on mobile (desktop owns
+// its height from `.content` and scrolls this container internally) — no
+// double scrollbars, no forced viewport band. Inner pages keep their own
+// container gutters, so no shell padding is applied here.
+// ---------------------------------------------------------------------------
+
+.main {
+  grid-area: main;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  @include m.respond-to(t.$breakpoint-lg) {
+    // The shell's only scroll container on desktop: owns its height from
+    // the flex column (`flex: 1` + `min-height: 0` defeats flex/grid
+    // blowout from wide children) while the sidebar and topbar stay fixed.
+    flex: 1 1 auto;
+    overflow-y: auto;
+    @include m.custom-scrollbar;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Footer — minimal close: wordmark + docs link
+// ---------------------------------------------------------------------------
+
+.footer {
+  grid-area: footer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-3;
+  flex-shrink: 0;
+  padding: t.$space-3 clamp(1rem, 3vw, 1.75rem);
+  border-top: 1px solid t.$color-border-subtle;
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  letter-spacing: 0.06em;
+}
+
+.footerBrand {
+  color: t.$color-text-muted;
+}
+
+.footerLink {
+  color: t.$color-text-secondary;
+  text-decoration: none;
+  transition: color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-text-primary;
+  }
+
+  @include m.focus-ring;
+}

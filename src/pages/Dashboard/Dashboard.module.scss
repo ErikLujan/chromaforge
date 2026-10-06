@@ -19,6 +19,11 @@
   position: relative;
   isolation: isolate;
   width: 100%;
+  // Fluid shell block: grows to fill short viewports, never shrinks below
+  // content, and can't be forced wider than the flex column — the grid
+  // ledger below already guards its own tracks with minmax(0, …).
+  flex: 1 0 auto;
+  min-width: 0;
 }
 
 // Faint atmospheric wash + retro grid — quieter than the Home hero, but the
@@ -58,10 +63,14 @@
 .container {
   position: relative;
   z-index: 1;
-  width: min(1440px, 94vw);
+  // Percent-of-main, never percent-of-viewport: `vw` here escapes the
+  // sidebar-narrowed column and forces a horizontal scrollbar on desktop.
+  width: min(1440px, 100%);
   margin: 0 auto;
   // Top pad stays modest: `<main>` already supplies the global header clearance.
-  padding: clamp(1rem, 2vw, 1.5rem) 0 clamp(3rem, 6vw, 5rem);
+  // Inline gutters replace the old 94vw centering trick (same ~3vw rhythm,
+  // now referenced to the column instead of the viewport).
+  padding: clamp(1rem, 2vw, 1.5rem) clamp(1.25rem, 3vw, 2.5rem) clamp(3rem, 6vw, 5rem);
 
   @include m.respond-below(t.$breakpoint-md) {
     width: 100%;
@@ -106,11 +115,13 @@
 }
 
 .pageTitle {
-  font-family: t.$font-body;
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
-  font-weight: t.$font-weight-bold;
+  font-family: t.$font-display;
+  font-size: t.$font-size-h2;
+  font-weight: t.$font-weight-heading;
+  line-height: t.$line-height-tight;
   letter-spacing: t.$tracking-tight;
   color: t.$color-text-primary;
+  text-wrap: balance;
 }
 
 .pageDescription {
@@ -210,28 +221,28 @@
 .metricValue {
   font-family: t.$font-display;
   // Fluid numerals — the metric IS the surface; no container needed.
+  // Tabular figures keep multi-digit counts from jittering on change.
+  font-variant-numeric: tabular-nums;
   font-size: clamp(2rem, 3.5vw, 2.75rem);
   font-weight: t.$font-weight-bold;
   line-height: t.$line-height-tight;
   letter-spacing: t.$tracking-tight;
   color: t.$color-text-primary;
-
-  &Accent {
-    color: t.$color-accent-primary-hover;
-  }
 }
 
 // ---------------------------------------------------------------------------
 // Workspace — the Master-Detail split.
-// Mobile: single column (master, then detail). ≥lg: 60/40 with a sticky pane.
+// Mobile: single column (detail, then master) so the active preview is
+// visible without scrolling past the whole library. ≥lg: 60/40 with a
+// sticky pane.
 // ---------------------------------------------------------------------------
 
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    'master'
-    'detail';
+    'detail'
+    'master';
   gap: t.$space-6;
   padding-top: t.$space-6;
 
@@ -426,7 +437,9 @@
   @include m.respond-to(t.$breakpoint-lg) {
     position: sticky;
     top: calc(t.$header-height + t.$space-6);
-    max-height: calc(100vh - t.$header-height - t.$space-12);
+    // Dynamic viewport units — the pane tracks the visible area, not the
+    // largest-possible viewport, on mobile browsers with collapsing chrome.
+    max-height: calc(100dvh - t.$header-height - t.$space-12);
     overflow-y: auto;
     overscroll-behavior: contain;
   }
@@ -486,7 +499,7 @@
   letter-spacing: t.$tracking-tight;
   color: t.$color-text-primary;
 
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .detailMeta {
@@ -542,6 +555,39 @@
   letter-spacing: 0.04em;
   text-transform: lowercase;
   color: t.$color-text-muted;
+  background: transparent;
+  border: none;
+  border-radius: t.$radius-sm;
+  // Negative margin keeps the ledger's optical alignment: the hover wash and
+  // focus ring extend into the row's own padding instead of shifting it.
+  margin: calc(-1 * t.$space-1) calc(-1 * t.$space-2);
+  padding: t.$space-1 t.$space-2;
+  cursor: pointer;
+  transition:
+    color t.$transition-fast,
+    background-color t.$transition-fast,
+    transform t.$transition-fast;
+
+  &:hover {
+    color: t.$color-text-primary;
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  // Press feedback — a subtle scale-down confirming the copy action.
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:focus-visible {
+    outline: 2px solid t.$color-accent-cyan-hover;
+    outline-offset: 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detailHex:active {
+    transform: none;
+  }
 }
 
 .detailActions {
@@ -750,7 +796,9 @@
 .libraryFooter {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: t.$space-3;
+  row-gap: t.$space-2;
   margin-top: t.$space-6;
   padding-top: t.$space-4;
   border-top: 1px solid t.$color-border-subtle;
@@ -792,22 +840,26 @@
 
 // ---------------------------------------------------------------------------
 // Delete confirmation — compact glass dialog body inside <Modal>.
+// Shared voice with the brand library: error-tinted tile, semibold title,
+// wrapping actions that settle right on wider screens.
 // ---------------------------------------------------------------------------
 
 .confirm {
   display: flex;
   flex-direction: column;
-  gap: t.$space-4;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
 }
 
 .confirmIcon {
-  display: grid;
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: t.$radius-full;
-  border: 1px solid t.$color-warning-muted;
-  color: t.$color-warning;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: t.$radius-md;
+  color: t.$color-error;
+  background: t.$color-error-muted;
+  border: 1px solid rgba(239, 68, 68, 0.32);
 }
 
 .confirmText {
@@ -818,8 +870,8 @@
 
 .confirmTitle {
   font-family: t.$font-body;
-  font-size: t.$font-size-h4;
-  font-weight: t.$font-weight-bold;
+  font-size: t.$font-size-body-lg;
+  font-weight: t.$font-weight-semibold;
   letter-spacing: t.$tracking-tight;
   color: t.$color-text-primary;
 }
@@ -828,13 +880,18 @@
   font-size: t.$font-size-small;
   line-height: t.$line-height-relaxed;
   color: t.$color-text-secondary;
+  max-width: 52ch;
 }
 
 .confirmActions {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: t.$space-3;
-  padding-top: t.$space-2;
+  margin-top: t.$space-2;
+
+  @include m.respond-to(t.$breakpoint-sm) {
+    justify-content: flex-end;
+  }
 }
 
 .confirmCancel,

@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /auth
+Disallow: /forgot-password
+Disallow: /update-password
+Disallow: /dashboard
+Disallow: /quiz
+Disallow: /brands
+Disallow: /profile
+
+Sitemap: https://chromaforge-generator.vercel.app/sitemap.xml

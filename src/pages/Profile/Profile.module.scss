@@ -22,6 +22,10 @@
   position: relative;
   isolation: isolate;
   width: 100%;
+  // Fluid shell block: fills short viewports, never shrinks below content,
+  // never exceeds the flex column. Inner layout tracks are minmax-guarded.
+  flex: 1 0 auto;
+  min-width: 0;
 }
 
 // Faint atmospheric wash + dot field — quieter than the Home hero; settings
@@ -102,11 +106,13 @@
 }
 
 .pageTitle {
-  font-family: t.$font-body;
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
-  font-weight: t.$font-weight-bold;
+  font-family: t.$font-display;
+  font-size: t.$font-size-h2;
+  font-weight: t.$font-weight-heading;
+  line-height: t.$line-height-tight;
   letter-spacing: t.$tracking-tight;
   color: t.$color-text-primary;
+  text-wrap: balance;
 
   opacity: 0;
   translate: 0 8px;
@@ -240,9 +246,9 @@
 
   // …and a leading gradient bar on the desktop sidebar.
   @include m.respond-to(t.$breakpoint-lg) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: t.$space-1;
+    flex-direction: row;
+    align-items: center;
+    gap: t.$space-3;
     width: 100%;
     padding: t.$space-3 t.$space-4;
 

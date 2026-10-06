@@ -1,0 +1,231 @@
+// ============================================================================
+// LandingLayout.module.scss
+// Conversion chrome for public persuasion surfaces: slim sticky header,
+// fixed zero-cost static wash, minimal single-row footer.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+.layout {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  isolation: isolate;
+}
+
+// ---------------------------------------------------------------------------
+// Wash — fixed static echo of the aurora (painted once, never re-composited)
+// Monochrome radial light at whisper alpha; the hero canvas covers it in the
+// first viewport, sections below read against it. No blur, no keyframes.
+// ---------------------------------------------------------------------------
+
+.wash {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      46rem 30rem at 12% -6%,
+      rgba(232, 234, 237, 0.06) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      52rem 34rem at 88% 22%,
+      rgba(154, 160, 174, 0.055) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      60rem 40rem at 50% 108%,
+      rgba(110, 116, 128, 0.05) 0%,
+      transparent 62%
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Header — slim conversion bar (fixed 64px contract, in-flow sticky)
+// ---------------------------------------------------------------------------
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: t.$z-sticky;
+  height: t.$header-height;
+  flex-shrink: 0;
+  background-color: rgba(10, 10, 11, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid t.$color-border-subtle;
+}
+
+.headerInner {
+  height: 100%;
+  width: 100%;
+  max-width: t.$breakpoint-2xl;
+  margin: 0 auto;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-4;
+  min-width: 0;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-2;
+  min-width: 0;
+  text-decoration: none;
+  color: t.$color-text-primary;
+
+  &:hover {
+    color: t.$color-text-primary;
+  }
+
+  @include m.focus-ring;
+}
+
+.brandMark {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.brandMarkIcon {
+  display: block;
+}
+
+.brandName {
+  font-family: t.$font-body;
+  font-size: t.$font-size-body;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-wide;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.navLink {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    color: t.$color-text-primary;
+  }
+
+  @include m.focus-ring;
+}
+
+.navCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: t.$space-2 t.$space-5;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: #0a0a0b;
+  background: #f2f3f5;
+  border-radius: t.$radius-sm;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    transform t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &:hover {
+    color: #0a0a0b;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  @include m.focus-ring;
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Main — routed landing content above the wash
+// ---------------------------------------------------------------------------
+
+.main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+// ---------------------------------------------------------------------------
+// Footer — minimal single row (brand mark retired here; legal links only)
+// ---------------------------------------------------------------------------
+
+.footer {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  border-top: 1px solid t.$color-border-subtle;
+}
+
+.footerInner {
+  width: 100%;
+  max-width: t.$breakpoint-2xl;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 1.5rem) clamp(1rem, 4vw, 2rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-3 t.$space-6;
+  min-width: 0;
+}
+
+.copyright {
+  font-family: t.$font-body;
+  font-size: t.$font-size-xs;
+  color: t.$color-text-muted;
+  white-space: nowrap;
+}
+
+.footerNav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: t.$space-2 t.$space-5;
+  min-width: 0;
+}
+
+.footerLink {
+  font-family: t.$font-body;
+  font-size: t.$font-size-xs;
+  color: t.$color-text-secondary;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    color: t.$color-text-primary;
+  }
+
+  @include m.focus-ring;
+}

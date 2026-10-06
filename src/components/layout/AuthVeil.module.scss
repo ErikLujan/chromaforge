@@ -1,0 +1,123 @@
+// ============================================================================
+// AuthVeil.module.scss
+// Forge Line — login/logout session instrument. Deliberately NOT the boot
+// splash (no hero mark, no wash, no progress meter).
+// Consumes design tokens from src/styles/_tokens.scss
+//
+// A column lockup: status row (pulsing dot + mono session label) over a
+// 160px hairline track with a travelling silver head. Obsidian solid ground,
+// portfolio-grade restraint for a 1.3s mask. Motion is opacity/transform
+// only; dot and head park static under prefers-reduced-motion.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: t.$z-modal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: t.$color-bg-primary;
+  // Fully opaque from the first committed paint — content must never flash
+  // beneath the veil. Only the exit transitions.
+  opacity: 1;
+  transition:
+    opacity 420ms t.$ease-out-quart,
+    transform 420ms t.$ease-out-quart;
+
+  &.veilExit {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+.lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: t.$space-4;
+}
+
+.statusRow {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-2;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: t.$radius-full;
+  background: t.$color-accent-cyan;
+  box-shadow: 0 0 8px rgba(185, 189, 199, 0.45);
+  animation: veilPulse 1.2s t.$ease-standard infinite;
+}
+
+@keyframes veilPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.label {
+  font-family: t.$font-mono;
+  font-size: 12px;
+  font-weight: t.$font-weight-medium;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: t.$color-text-muted;
+  white-space: nowrap;
+}
+
+.track {
+  width: 160px;
+  height: 1px;
+  overflow: hidden;
+  border-radius: t.$radius-full;
+  background: t.$color-border-subtle;
+}
+
+.head {
+  width: 36%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    rgba(232, 234, 237, 0.15) 0%,
+    rgba(232, 234, 237, 0.6) 55%,
+    #ffffff 100%
+  );
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
+  transform: translateX(-110%);
+  animation: veilTravel 1s t.$ease-standard infinite;
+}
+
+@keyframes veilTravel {
+  to {
+    transform: translateX(300%);
+  }
+}
+
+@include m.reduced-motion {
+  .dot {
+    animation: none;
+    opacity: 0.7;
+  }
+
+  .head {
+    animation: none;
+    transform: translateX(89%);
+    opacity: 0.6;
+  }
+}

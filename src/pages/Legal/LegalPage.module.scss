@@ -193,8 +193,21 @@
 }
 
 // ---------------------------------------------------------------------------
-// Article — the document block (h1 + body from markdown)
+// Article — the document block (shell h1 + body from markdown)
 // ---------------------------------------------------------------------------
+// The shell title replicates the reader's h1 face so hoisting the markdown
+// `#` into a native `h1` keeps the document's opening line pixel-identical.
+
+.title {
+  font-family: t.$font-display;
+  font-size: t.$font-size-h1;
+  font-weight: t.$font-weight-bold;
+  line-height: t.$line-height-tight;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+  text-wrap: balance;
+  margin: 0 0 t.$space-8;
+}
 
 .article {
   opacity: 0;

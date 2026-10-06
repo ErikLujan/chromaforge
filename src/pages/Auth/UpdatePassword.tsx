@@ -9,6 +9,7 @@ import AsyncButton from '@/components/ui/AsyncButton';
 import { supabase } from '@/services/supabase.client';
 import { AUTH_GENERIC_ERROR, getAuthErrorMessage } from '@/utils/auth.utils';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useNoIndex } from '@/hooks/useNoIndex';
 import { useEntrance } from '@/hooks/useEntrance';
 import { useSpotlight } from '@/hooks/useSpotlight';
 import styles from './UpdatePassword.module.scss';
@@ -31,6 +32,7 @@ interface PasswordErrors {
 
 export default function UpdatePassword() {
   useDocumentTitle('Nueva contraseña');
+  useNoIndex();
 
   const navigate = useNavigate();
   const entered = useEntrance();

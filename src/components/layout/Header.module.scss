@@ -301,6 +301,10 @@
     background-color: t.$color-bg-interactive;
   }
 
+  &:active {
+    transform: scale(0.97);
+  }
+
   @include m.focus-ring;
 }
 
@@ -341,25 +345,24 @@
 }
 
 // ---------------------------------------------------------------------------
-// Avatar Dropdown — elevated obsidian menu at the modal layer
+// Avatar Dropdown — elevated obsidian menu at the dropdown layer
 //
-// The dropdown must flawlessly overlap all page content, so it participates at
-// the highest non-toast z-index (9999). It sits on an elevated obsidian
-// surface with a glass hairline — crisp, readable, and always on top.
+// Opaque elevated surface (never translucent glass over page content — the
+// washout killed item legibility), strong hairline, modal-grade shadow. The
+// `userMenu` wrapper already establishes the stacking context above page
+// content, so the token dropdown layer suffices — no arbitrary z-index.
 // ---------------------------------------------------------------------------
 
 .dropdown {
   position: absolute;
   top: calc(100% + t.$space-3);
   right: 0;
-  z-index: 9999;
+  z-index: t.$z-dropdown;
   min-width: 248px;
   padding: t.$space-2;
-  background: t.$glass-bg-strong;
-  border: 1px solid t.$glass-border-highlight;
+  background: t.$color-bg-elevated;
+  border: 1px solid t.$color-border-strong;
   border-radius: t.$radius-lg;
-  backdrop-filter: blur(t.$glass-blur) saturate(140%);
-  -webkit-backdrop-filter: blur(t.$glass-blur) saturate(140%);
   box-shadow: t.$shadow-xl;
   animation: dropdownIn 200ms t.$ease-out-quart both;
 }
@@ -369,9 +372,16 @@
     opacity: 0;
     transform: translateY(-6px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@include m.reduced-motion {
+  .dropdown {
+    animation: none;
   }
 }
 
@@ -426,7 +436,8 @@
   cursor: pointer;
   transition:
     color t.$transition-fast,
-    background-color t.$transition-fast;
+    background-color t.$transition-fast,
+    transform t.$transition-fast;
 
   &:hover {
     color: t.$color-text-primary;
@@ -435,6 +446,15 @@
     svg {
       color: t.$color-accent-primary;
     }
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
   }
 
   @include m.focus-ring;
@@ -457,6 +477,13 @@
     svg {
       color: t.$color-error;
     }
+  }
+}
+
+@include m.reduced-motion {
+  .dropdownItem:active,
+  .avatarButton:active {
+    transform: none;
   }
 }
 

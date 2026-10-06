@@ -154,10 +154,23 @@ function ContrastBadge({ color, surface }: { color: string; surface: string }) {
 /**
  * Brand view — the generated identity as the canvas focal point.
  *
+ * The title renders as the workspace's single `h1` in the live canvas and
+ * steps down to `h2` inside the off-screen PDF capture stage (which already
+ * heads itself with the export title), so the document never holds two
+ * level-one headings.
+ *
  * @param {BrandPalette} palette The generated palette.
+ * @param {1 | 2} titleLevel The heading level for the brand title.
  * @returns {JSX.Element} The brand presentation panel.
  */
-function BrandView({ palette }: { palette: BrandPalette }) {
+function BrandView({
+  palette,
+  titleLevel = 1,
+}: {
+  palette: BrandPalette;
+  titleLevel?: 1 | 2;
+}) {
+  const TitleTag = titleLevel === 1 ? 'h1' : 'h2';
   return (
     <div className={styles.stage}>
       <div className={styles.brandHero}>
@@ -167,7 +180,7 @@ function BrandView({ palette }: { palette: BrandPalette }) {
 
         <div className={styles.brandMeta}>
           <span className={styles.brandEyebrow}>Marca generada · Contraste AA</span>
-          <h2 className={styles.brandTitle}>Identidad de marca</h2>
+          <TitleTag className={styles.brandTitle}>Identidad de marca</TitleTag>
           <p className={styles.brandTagline}>
             Sistema de identidad calculado a partir de un único color semilla.
             El nombre, la tipografía y el logotipo finales se componen en la
@@ -535,7 +548,7 @@ export default function ResultsWorkspace({ palette }: ResultsWorkspaceProps) {
         </header>
 
         <ExportSection label="Marca">
-          <BrandView palette={palette} />
+          <BrandView palette={palette} titleLevel={2} />
         </ExportSection>
         <ExportSection label="Colores">
           <ColorsView palette={palette} />

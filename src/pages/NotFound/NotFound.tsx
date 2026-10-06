@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, House } from 'lucide-react';
 import clsx from 'clsx';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useNoIndex } from '@/hooks/useNoIndex';
 import { useEntrance } from '@/hooks/useEntrance';
 import { useSpotlight } from '@/hooks/useSpotlight';
 import NotFoundTerminal from './NotFoundTerminal';
@@ -29,6 +30,7 @@ import styles from './NotFound.module.scss';
  */
 export default function NotFound() {
   useDocumentTitle('Página no encontrada');
+  useNoIndex();
 
   const navigate = useNavigate();
   const location = useLocation();

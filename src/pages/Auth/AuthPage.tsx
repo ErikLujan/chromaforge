@@ -23,10 +23,9 @@ import type { Area, Point } from 'react-easy-crop';
 import clsx from 'clsx';
 import { toast } from 'sonner';
 import ChromaForgeIcon from '@/components/brand/ChromaForgeIcon';
-import { supabase } from '@/services/supabase.client';
+import { upsertProfile } from '@/services/profile.service';
 import { useAuthStore } from '@/store/useAuthStore';
 import { AUTH_GENERIC_ERROR, getAuthErrorMessage } from '@/utils/auth.utils';
-import { sanitizeText } from '@/utils/sanitization.utils';
 import {
   cropImage,
   isSupportedAvatar,
@@ -36,6 +35,7 @@ import {
 } from '@/services/avatar.service';
 import type { CroppedAvatar } from '@/services/avatar.service';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useNoIndex } from '@/hooks/useNoIndex';
 import { useEntrance } from '@/hooks/useEntrance';
 import { useSpotlight } from '@/hooks/useSpotlight';
 import AsyncButton from '@/components/ui/AsyncButton';
@@ -342,6 +342,8 @@ function AvatarStep({
               src={croppedAvatar.dataUrl}
               alt="Vista previa de tu foto de perfil"
               className={styles.previewImage}
+              width={84}
+              height={84}
             />
           </div>
           <p className={styles.previewNote}>Esta será tu foto de perfil.</p>
@@ -375,8 +377,9 @@ function AvatarStep({
 /**
  * Creates the public `profiles` row for a freshly registered account.
  * Best-effort by design: the account itself is already valid, so a profile
- * failure is logged and never blocks the signup success path. The free-text
- * display name is sanitized at this boundary before reaching the public row.
+ * failure is logged and never blocks the signup success path. The write
+ * itself lives in `profile.service`, which sanitizes free text at the
+ * data-access boundary.
  *
  * @param {string} userId The newly created auth user id.
  * @param {string} username The display name entered during registration.
@@ -390,11 +393,11 @@ async function createProfile(
   email: string,
   avatarUrl?: string,
 ): Promise<void> {
-  const { error } = await supabase.from('profiles').upsert({
+  const { error } = await upsertProfile({
     id: userId,
-    username: sanitizeText(username),
+    username,
     email,
-    ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
+    ...(avatarUrl ? { avatarUrl } : {}),
   });
 
   if (error) {
@@ -409,6 +412,7 @@ async function createProfile(
  */
 export default function AuthPage() {
   useDocumentTitle('Autenticación');
+  useNoIndex();
 
   const entered = useEntrance();
   const panelEntered = useEntrance(200);
@@ -767,6 +771,10 @@ export default function AuthPage() {
       <div className={clsx(styles.formColumn, entered && styles.entered)}>
         <div className={styles.formColumnInner}>
           <header className={styles.formHeader}>
+            <Link to="/" className={styles.backLink}>
+              <ArrowLeft size={15} aria-hidden="true" />
+              Volver al inicio
+            </Link>
             <Link to="/" className={styles.brand} aria-label="ChromaForge, ir al inicio">
               <ChromaForgeIcon size={48} className={styles.brandMark} />
               <span className={styles.brandName}>ChromaForge</span>

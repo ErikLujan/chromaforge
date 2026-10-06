@@ -41,9 +41,8 @@ screenshot-generated/
 .playwright-mcp/
 .playwright-mcp
 
-# OpenCode / AI-agent local config (may reference local tokens / project refs)
+# Opencode code / AI-agent local config (may reference local tokens / project refs)
 opencode.json
-opencode.jsonc
 OPENCODE.md
 prompt.md
 PRODUCT.md
@@ -57,3 +56,5 @@ components.json
 
 scripts/
 capturas-chromaforge
+
+repomix-output.xml

@@ -18,14 +18,17 @@
 1. [Descripción General](#-descripción-general)
 2. [Características Principales](#-características-principales)
 3. [Arquitectura y Flujo de Trabajo](#-arquitectura-y-flujo-de-trabajo)
-4. [Stack Tecnológico](#-stack-tecnológico)
-5. [Instalación Local](#-instalación-local)
-6. [Variables de Entorno](#-variables-de-entorno)
-7. [Scripts Disponibles](#-scripts-disponibles)
-8. [Estructura del Proyecto](#-estructura-del-proyecto)
-9. [Seguridad](#-seguridad)
-10. [Rendimiento](#-rendimiento)
-11. [Licencia](#-licencia)
+4. [Rutas](#-rutas)
+5. [SEO y Pre-producción](#-seo-y-pre-producción)
+6. [Stack Tecnológico](#-stack-tecnológico)
+7. [Instalación Local](#-instalación-local)
+8. [Variables de Entorno](#-variables-de-entorno)
+9. [Scripts Disponibles](#-scripts-disponibles)
+10. [Estructura del Proyecto](#-estructura-del-proyecto)
+11. [Seguridad](#-seguridad)
+12. [Rendimiento](#-rendimiento)
+13. [Handoff de Sesión](#-handoff-de-sesión)
+14. [Licencia](#-licencia)
 
 ---
 
@@ -35,7 +38,7 @@
 
 El flujo central es deliberadamente simple para el usuario y riguroso por dentro:
 
-1. La persona usuaria completa un **asistente de cuestionario** sobre personalidad, croma, valor y armonía de la marca.
+1. La persona usuaria completa un **cuestionario de ocho preguntas** sobre personalidad, croma, valor y armonía de la marca.
 2. El **Motor de Generación de Color** agrega esas respuestas en un vector de intención determinista y deriva una paleta de cinco roles en espacio HSL.
 3. Cada rol legible se verifica y corrige automáticamente hasta alcanzar el umbral **WCAG 2.1 AA (contraste 4.5:1)** para texto normal.
 4. El resultado se presenta en un **espacio de trabajo visual** con muestras de color, previsualizaciones aplicadas, verificación de accesibilidad y maquetas de marca.
@@ -58,7 +61,7 @@ Principios del producto:
 
 ## ✨ Características Principales
 
-- **Generación algorítmica en tiempo real:** cuestionario por pasos que alimenta un motor determinista de color. Cada cambio recalcula la paleta y actualiza la interfaz sin recargas.
+- **Generación algorítmica en tiempo real:** cuestionario de ocho preguntas por pasos que alimenta un motor determinista de color. Cada cambio recalcula la paleta y actualiza la interfaz sin recargas.
 - **Motor de color multidimensional:** agregación por hash FNV-1a, desplazamiento de tono acumulado, promedios ponderados de saturación y luminosidad, y voto de armonía por pluralidad.
 - **Validación WCAG 2.1 automática:** cálculo de luminancia relativa y relación de contraste con `colord`, corrección iterativa de luminosidad y reporte de niveles AA y AAA.
 - **Espacio de trabajo de resultados:** muestras de color, previsualización tipográfica, previsualización aplicada y verificación de accesibilidad en una sola superficie.
@@ -128,7 +131,7 @@ flowchart LR
     subgraph Cliente["Aplicación React 19 + Vite"]
         UI["Componentes React<br/>Páginas, Features,<br/>UI y Layout"]
         Hooks["Hooks y Utilidades<br/>useAuth, useQuiz,<br/>color.utils, pdf.utils"]
-        Store["Tiendas Zustand 5<br/>useAuthStore<br/>useBrandStore"]
+        Store["Tiendas Zustand 5<br/>useAuthStore<br/>useBrandStore<br/>useMotionStore"]
         UI <--> Hooks
         UI --> Store
         Hooks --> Store
@@ -155,9 +158,39 @@ flowchart LR
 Responsabilidades por capa:
 
 - **Componentes React:** presentación, interacción y navegación. No contienen SQL ni credenciales.
-- **Tiendas Zustand:** ciclo de vida de la paleta activa, carga, errores y biblioteca guardada. La computación pesada se delega a utilidades puras.
+- **Tiendas Zustand:** sesión (`useAuthStore`), ciclo de vida de la paleta activa y biblioteca (`useBrandStore`), preferencia de movimiento (`useMotionStore`). El estado del cuestionario es local a `QuizWizard`; no existe tienda de quiz.
 - **Servicios:** clientes externos, generación de PDF, saneamiento y envoltorios de Supabase.
 - **Supabase:** autenticación, persistencia relacional con RLS y almacenamiento de objetos.
+
+---
+
+## 🧭 Rutas
+
+Tres grupos de rutas según la intención del visitante (definidas en `src/App.tsx`):
+
+| Grupo | Diseño | Rutas |
+|---|---|---|
+| Público persuasivo | `LandingLayout` | `/`, `/privacy`, `/terms`, `/cookies`, `/docs`, `*` (404 dentro del chrome de landing) |
+| Espacio autenticado | `DashboardLayout` | `/dashboard`, `/quiz`, `/brands`, `/profile` (todas tras `ProtectedRoute`) |
+| Independiente | Sin chrome de shell | `/auth`, `/forgot-password` (tras `PublicRoute`), `/update-password` (tras `ProtectedRoute`) |
+
+Notas verificadas:
+
+- El espacio de resultados vive en `/dashboard`: la paleta generada sustituye la cuadrícula Bento en el lugar, nunca como ruta separada. Al abandonar `/dashboard` se descarta la paleta activa no guardada; las identidades guardadas no se tocan.
+- `ProtectedRoute` y `PublicRoute` son guardianes de experiencia de usuario, no fronteras de autorización; la autorización real la aplica RLS en Supabase.
+- Las rutas de recuperación ocultan la navegación general para no revelar el estado de sesión.
+
+---
+
+## 🔍 SEO y Pre-producción
+
+Estado verificado para el despliegue en Vercel (SPA React 19 + Vite 6):
+
+- **Títulos y meta por ruta:** `useSeo` fija título, meta descripción, canónica y etiquetas OG/Twitter (`og:title`, `og:description`, `og:type`, `og:locale es_ES`, `og:url`, `og:image`, `twitter:card summary_large_image`) en las cinco superficies indexables (`/`, `/docs`, `/privacy`, `/terms`, `/cookies`); todo lo creado se elimina al desmontar para no filtrar etiquetas entre rutas. Las superficies de aplicación usan `useDocumentTitle`.
+- **Rutas privadas no indexables:** `useNoIndex` inserta `noindex,nofollow` en `/auth`, `/forgot-password`, `/update-password`, `/dashboard`, `/quiz`, `/brands`, `/profile` y en la 404, y lo retira al volver a una ruta pública.
+- **Cabeza estática (`index.html`):** `lang="es"`, meta descripción, `theme-color #0B0D12`, `favicon.svg`, `manifest.webmanifest` y preconexión a fuentes. Sin etiquetas OG estáticas: las aporta `useSeo` en tiempo de ejecución (los rastreadores sin JavaScript solo ven la cabeza estática).
+- **Activos públicos:** `public/sitemap.xml` (5 URL públicas), `public/robots.txt` (bloquea rutas privadas y de auth, declara el sitemap), `public/og-cover.png` + `public/og-cover.svg` (imagen OG), `public/manifest.webmanifest`, `public/favicon.svg`.
+- **Sin `vercel.json`:** el despliegue usa los valores predeterminados de Vercel para Vite SPA.
 
 ---
 
@@ -169,7 +202,7 @@ Responsabilidades por capa:
 | Lenguaje | TypeScript | 5.7 | Tipado estricto y modelos de dominio |
 | Empaquetador | Vite | 6.0 | Desarrollo rápido y construcción optimizada |
 | Enrutamiento | React Router DOM | 7.0 | Rutas públicas, protegidas y documentos |
-| Estado global | Zustand | 5.0 | Sesión, cuestionario y ciclo de marca |
+| Estado global | Zustand | 5.0 | Sesión, ciclo de marca y preferencia de movimiento |
 | Backend | Supabase JS | 2.45 | Auth, Postgres, RLS y Storage |
 | Colorimetría | Colord | 2.9 | Conversión HSL, luminancia y contraste WCAG |
 | Exportación | jsPDF | 2.5 | Generación de guía de marca en PDF |
@@ -257,6 +290,7 @@ Reglas de seguridad para la configuración:
 - La aplicación falla de forma explícita al iniciar cuando falta una variable pública requerida.
 - La presencia de `VITE_SUPABASE_SERVICE_ROLE_KEY` provoca un error inmediato, pues indica una exposición accidental de privilegios.
 - Nunca registre valores de entorno en la consola ni en mensajes de error visibles.
+- `.env` está ignorado por git; solo `.env.example` se versiona (verificado: `.env` no está rastreado).
 
 ---
 
@@ -301,7 +335,8 @@ src/
 ├── hooks/                  # Hooks compartidos de React
 ├── lib/                    # Ayudantes compartidos, por ejemplo combinación de clases
 ├── services/               # Clientes externos: Supabase, avatar, PDF y saneamiento
-├── store/                  # Tiendas Zustand: autenticación y marca
+├── store/                  # Tiendas Zustand: autenticación, marca y movimiento
+#                              (el estado del cuestionario es local a QuizWizard)
 ├── styles/                 # Tokens SCSS, tipografía, animaciones y estilos globales
 ├── types/                  # Interfaces TypeScript de auth, marca y Supabase
 ├── utils/                  # Funciones puras: color, PDF, saneamiento y auth
@@ -338,6 +373,12 @@ Convenciones arquitectónicas:
 - **Cálculos puros y memorizables:** el motor de color evita trabajo durante el renderizado y permanece libre de acceso al DOM.
 - **Alias de importación:** la ruta `@` apunta a `src` para límites de módulo claros y refactorizaciones seguras.
 - **Objetivos de Core Web Vitals:** primer pintado con contenido en menos de 1.2 segundos y mayor pintado con contenido en menos de 2.0 segundos.
+
+---
+
+## 📌 Handoff de Sesión
+
+`handoff.md` es la fuente de verdad operativa entre sesiones: contrato de límites del shell, tiendas vigentes (`useAuthStore`, `useBrandStore`, `useMotionStore`), verificación manual por ventana gráfica y la cola SEO + legales pendiente. La etapa visual está declarada cerrada; sin rediseño ni nuevas dependencias en este pase.
 
 ---
 

@@ -1,0 +1,140 @@
+// ============================================================================
+// MotionToggle.module.scss
+// Fixed icon-only motion override: glass circle, bottom-right, 44px target.
+// Monochrome; state reads through icon dimming plus the status dot.
+// ============================================================================
+
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+
+.toggle {
+  position: fixed;
+  right: clamp(1rem, 3vw, 1.5rem);
+  bottom: clamp(1rem, 3vw, 1.5rem);
+  z-index: t.$z-overlay;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: t.$radius-full;
+  color: t.$color-text-secondary;
+  background: t.$glass-bg-strong;
+  border: 1px solid t.$glass-border;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: t.$shadow-md;
+  cursor: pointer;
+  transition:
+    transform 140ms t.$ease-out,
+    color t.$transition-fast,
+    border-color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-text-primary;
+    border-color: t.$color-border-strong;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+
+  &[data-reduced] {
+    color: t.$color-text-muted;
+  }
+
+  @include m.focus-ring;
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+.icon {
+  display: block;
+}
+
+// Hover/focus tooltip — obsidian chip anchored to the trigger's top-right,
+// growing up-left so it never clips the viewport corner. Origin-aware
+// entrance from the trigger (scale 0.95 + fade, ease-out); pointer-transparent
+// so it never traps or flickers the hover.
+
+.tooltip {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.625rem);
+  max-width: 9rem;
+  padding: t.$space-2 t.$space-3;
+  font-family: t.$font-body;
+  font-size: 0.75rem;
+  font-weight: t.$font-weight-medium;
+  line-height: t.$line-height-snug;
+  text-align: right;
+  white-space: normal;
+  color: t.$color-text-primary;
+  background-color: t.$color-bg-elevated;
+  border: 1px solid t.$color-border-default;
+  border-radius: t.$radius-sm;
+  box-shadow: t.$shadow-md;
+  opacity: 0;
+  transform: translateY(4px) scale(0.95);
+  transform-origin: bottom right;
+  transition:
+    opacity 160ms t.$ease-out,
+    transform 160ms t.$ease-out;
+  pointer-events: none;
+}
+
+.toggle:hover .tooltip,
+.toggle:focus-visible .tooltip {
+  opacity: 1;
+  transform: none;
+}
+
+// Speech-bubble caret — two layered triangles (border shell + fill) centered
+// above the 44px trigger. Pseudo-elements ride the tooltip's own
+// opacity/transform transition, so the pointer draws itself in with the chip.
+
+.tooltip::before,
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  border-style: solid;
+  pointer-events: none;
+}
+
+.tooltip::before {
+  right: 0.8125rem;
+  border-width: 7px 7px 0 7px;
+  border-color: t.$color-border-default transparent transparent transparent;
+}
+
+.tooltip::after {
+  right: 0.875rem;
+  border-width: 6px 6px 0 6px;
+  border-color: t.$color-bg-elevated transparent transparent transparent;
+}
+
+@include m.reduced-motion {
+  .tooltip {
+    transform: none;
+    transition: none;
+  }
+}
+
+.dot {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: t.$radius-full;
+  background: t.$color-text-primary;
+
+  [data-reduced] > & {
+    background: transparent;
+    border: 1px solid t.$color-text-muted;
+  }
+}

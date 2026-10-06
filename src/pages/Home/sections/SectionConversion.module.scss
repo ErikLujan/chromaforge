@@ -1,0 +1,139 @@
+// ============================================================================
+// SectionConversion.module.scss
+// Section 06 — centered quiet close behind a hairline. Generous air, tight
+// group: title, proof meta, one primary action, one tertiary link.
+// ============================================================================
+
+@use '../../../styles/tokens' as t;
+@use '../../../styles/mixins' as m;
+
+.section {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  padding-block: clamp(3.5rem, 8vw, 5.5rem);
+  border-top: 1px solid t.$color-border-subtle;
+}
+
+.inner {
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  min-width: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Scroll reveal — single gentle entrance (transform/opacity only)
+// ---------------------------------------------------------------------------
+
+.revealItem {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 280ms t.$ease-out-quint,
+    transform 280ms t.$ease-out-quint;
+}
+
+[data-revealed].revealItem,
+[data-revealed] .revealItem {
+  opacity: 1;
+  transform: none;
+}
+
+@include m.reduced-motion {
+  .revealItem {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.title {
+  font-family: t.$font-display;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: t.$font-weight-display;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: t.$color-text-primary;
+  text-wrap: balance;
+}
+
+.meta {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  color: t.$color-text-muted;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: t.$space-4;
+  min-width: 0;
+  margin-top: t.$space-2;
+}
+
+.primaryCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: t.$space-3 t.$space-6;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: #0a0a0b;
+  background: #f2f3f5;
+  border-radius: t.$radius-sm;
+  text-decoration: none;
+  white-space: nowrap;
+  max-width: 100%;
+  transition:
+    transform t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &:hover {
+    color: #0a0a0b;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  @include m.focus-ring;
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+// Tertiary exit — plain text link, deliberately not a second button.
+
+.tertiaryLink {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-secondary;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    color: t.$color-text-primary;
+  }
+
+  @include m.focus-ring;
+}
+
+.ctaPlaceholder {
+  display: inline-block;
+  height: 40px;
+  width: 190px;
+  border-radius: t.$radius-sm;
+  background: t.$color-bg-interactive;
+}

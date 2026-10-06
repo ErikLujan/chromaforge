@@ -1,0 +1,339 @@
+// ============================================================================
+// SectionBrandBook.module.scss
+// Section 05 — asymmetric editorial spread: fanned page pile + manifest.
+// Print-like stillness; depth from rotation and overlap, never from glow.
+// ============================================================================
+
+@use '../../../styles/tokens' as t;
+@use '../../../styles/mixins' as m;
+
+.section {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.inner {
+  width: 100%;
+  max-width: t.$breakpoint-2xl;
+  margin: 0 auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  min-width: 0;
+
+  @media (min-width: t.$breakpoint-lg) {
+    grid-template-columns: 7fr 5fr;
+    align-items: start;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Scroll reveal — fade + rise, staggered (transform/opacity only)
+// ---------------------------------------------------------------------------
+
+.revealItem {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 280ms t.$ease-out-quint,
+    transform 280ms t.$ease-out-quint;
+}
+
+[data-revealed] .revealItem {
+  opacity: 1;
+  transform: none;
+}
+
+@include m.reduced-motion {
+  .revealItem {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Spread — cascading page pile (overflow clipped: print-bleed feel)
+// ---------------------------------------------------------------------------
+
+.spread {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-3;
+  min-width: 0;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  overflow: hidden;
+  overflow: clip;
+  border-radius: t.$radius-lg;
+  background: t.$color-bg-secondary;
+  border: 1px solid t.$color-border-subtle;
+}
+
+.page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+  width: min(100%, 21rem);
+  min-width: 0;
+  aspect-ratio: 3 / 4;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  background: t.$color-surface-primary;
+  border: 1px solid t.$color-border-default;
+  border-radius: t.$radius-md;
+  box-shadow: t.$shadow-lg;
+
+  &[data-page='cover'] {
+    transform: rotate(-3deg);
+  }
+
+  &[data-page='colors'] {
+    align-self: flex-end;
+    margin-top: clamp(-7rem, -18%, -3.5rem);
+    transform: rotate(2deg);
+  }
+
+  &[data-page='type'] {
+    margin-top: clamp(-7rem, -18%, -3.5rem);
+    transform: rotate(-1.25deg);
+  }
+}
+
+.pageEyebrow {
+  font-family: t.$font-mono;
+  font-size: 0.625rem;
+  letter-spacing: t.$tracking-wide;
+  color: t.$color-text-muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pageTitle {
+  font-family: t.$font-display;
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  font-weight: t.$font-weight-display;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.pageMeta {
+  font-family: t.$font-body;
+  font-size: 0.6875rem;
+  color: t.$color-text-secondary;
+}
+
+.pageStrip {
+  display: flex;
+  gap: t.$space-1;
+  margin-top: auto;
+}
+
+.pageStripTone {
+  flex: 1;
+  min-width: 0;
+  height: 1.5rem;
+  border-radius: t.$radius-sm;
+}
+
+.pageRows {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+  margin-top: t.$space-2;
+}
+
+.pageRow {
+  display: flex;
+  align-items: center;
+  gap: t.$space-2;
+}
+
+.pageRowTone {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  border-radius: t.$radius-sm;
+}
+
+.pageRowBar {
+  flex: 1;
+  min-width: 0;
+  height: 0.625rem;
+  border-radius: t.$radius-full;
+  background: t.$color-surface-interactive;
+}
+
+.pageAa {
+  font-family: t.$font-display;
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: t.$font-weight-display;
+  line-height: 1;
+}
+
+.pageLines {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+  margin-top: t.$space-2;
+}
+
+.pageLine {
+  height: 0.625rem;
+  border-radius: t.$radius-full;
+  background: t.$color-surface-interactive;
+
+  &[data-short] {
+    width: 62%;
+  }
+}
+
+.pageFolio {
+  margin-top: auto;
+  padding-top: t.$space-3;
+  font-family: t.$font-mono;
+  font-size: 0.625rem;
+  color: t.$color-text-muted;
+  border-top: 1px solid t.$color-border-subtle;
+}
+
+.caption {
+  font-family: t.$font-body;
+  font-size: t.$font-size-xs;
+  color: t.$color-text-muted;
+}
+
+// ---------------------------------------------------------------------------
+// Manifest — chapter list, meta, conversion action
+// ---------------------------------------------------------------------------
+
+.manifest {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(0.875rem, 2vw, 1.25rem);
+  min-width: 0;
+}
+
+.title {
+  font-family: t.$font-display;
+  font-size: clamp(1.75rem, 3vw, 2.75rem);
+  font-weight: t.$font-weight-display;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: t.$color-text-primary;
+  text-wrap: balance;
+}
+
+.lede {
+  font-family: t.$font-body;
+  font-size: clamp(0.95rem, 1.4vw, 1.0625rem);
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 56ch;
+}
+
+.chapters {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-3;
+  width: 100%;
+  min-width: 0;
+  list-style: none;
+}
+
+.chapter {
+  display: flex;
+  align-items: flex-start;
+  gap: t.$space-3;
+  min-width: 0;
+}
+
+.chapterCheck {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  color: t.$color-success;
+  border: 1px solid t.$color-border-default;
+  border-radius: t.$radius-full;
+}
+
+.chapterText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chapterLabel {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: t.$color-text-primary;
+}
+
+.chapterDetail {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  color: t.$color-text-secondary;
+}
+
+.meta {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  font-variant-numeric: tabular-nums;
+  color: t.$color-text-muted;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-2;
+  padding: t.$space-3 t.$space-6;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: #0a0a0b;
+  background: #f2f3f5;
+  border-radius: t.$radius-sm;
+  text-decoration: none;
+  white-space: nowrap;
+  max-width: 100%;
+  transition:
+    transform t.$transition-fast,
+    background-color t.$transition-fast;
+
+  &:hover {
+    color: #0a0a0b;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  @include m.focus-ring;
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}
+
+.note {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  color: t.$color-text-muted;
+}

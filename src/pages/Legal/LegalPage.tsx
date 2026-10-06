@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import clsx from 'clsx';
-import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useSeo } from '@/hooks/useSeo';
 import { useEntrance } from '@/hooks/useEntrance';
 import MarkdownViewer from '@/components/common/MarkdownViewer';
 import styles from './LegalPage.module.scss';
@@ -97,12 +97,27 @@ export default function LegalPage({ slug }: LegalPageProps) {
   const route = legalRoutes[slug];
   const markdown = useMemo(() => markdownBySlug[slug] ?? '', [slug]);
 
+  // WHY: the markdown `#` is the visible document title — hoist it into the
+  // shell `h1` and strip it from the reader body so the page holds exactly
+  // one level-one heading with zero duplicated copy.
+  const { docTitle, docBody } = useMemo(() => {
+    const match = /^#\s+(.+)$/m.exec(markdown);
+    const heading = match?.[1];
+    return {
+      docTitle:
+        typeof heading === 'string' && heading.trim() !== ''
+          ? heading.trim()
+          : route.title,
+      docBody: markdown.replace(/^#\s+.+$/m, '').trimStart(),
+    };
+  }, [markdown, route.title]);
+
   const entered = useEntrance(0, slug);
 
-  useDocumentTitle(route.title);
+  useSeo(slug);
 
   return (
-    <section className={styles.page} aria-label={route.title}>
+    <section className={styles.page} aria-labelledby="legal-title">
       <div className={styles.background} aria-hidden="true" />
 
       <div className={styles.shell}>
@@ -121,7 +136,10 @@ export default function LegalPage({ slug }: LegalPageProps) {
         </header>
 
         <article className={clsx(styles.article, entered && styles.entered)}>
-          <MarkdownViewer markdown={markdown} />
+          <h1 id="legal-title" className={styles.title}>
+            {docTitle}
+          </h1>
+          <MarkdownViewer markdown={docBody} />
         </article>
       </div>
     </section>

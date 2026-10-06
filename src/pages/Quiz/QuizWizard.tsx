@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
-import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, ChevronLeft, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { quizQuestions } from '@/data/quizDictionary';
 import type { QuizAnswer, QuizOption, QuizQuestion } from '@/data/quizDictionary';
@@ -10,6 +10,7 @@ import { useBrandStore } from '@/store/useBrandStore';
 import { PALETTE_ROLES } from '@/utils/color.utils';
 import type { Json } from '@/types/supabase.types';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useNoIndex } from '@/hooks/useNoIndex';
 import styles from './QuizWizard.module.scss';
 
 /**
@@ -79,6 +80,7 @@ function deriveSeedColor(answers: readonly QuizAnswer[]): string {
  */
 export default function QuizWizard() {
   useDocumentTitle('Cuestionario');
+  useNoIndex();
 
   const navigate = useNavigate();
   const generateBrandPalette = useBrandStore((state) => state.generateBrandPalette);
@@ -88,10 +90,12 @@ export default function QuizWizard() {
   const [index, setIndex] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>('entering');
+  const [isSlidingBack, setIsSlidingBack] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completionPhase, setCompletionPhase] = useState<CompletionPhase>('forging');
 
   const questionRef = useRef<HTMLHeadingElement>(null);
+  const optionsRef = useRef<Array<HTMLButtonElement | null>>([]);
   const answersRef = useRef<readonly QuizAnswer[]>([]);
   const advanceTimerRef = useRef<number | null>(null);
   const leaveTimerRef = useRef<number | null>(null);
@@ -107,7 +111,10 @@ export default function QuizWizard() {
     }
     mountedRef.current = true;
 
-    const settleTimer = window.setTimeout(() => setPhase('stable'), 30);
+    const settleTimer = window.setTimeout(() => {
+      setPhase('stable');
+      setIsSlidingBack(false);
+    }, 30);
     return () => window.clearTimeout(settleTimer);
   }, [hasStarted, index, isSubmitting]);
 
@@ -138,6 +145,35 @@ export default function QuizWizard() {
       setPhase('entering');
     }, TRANSITION_MS);
   }, [phase]);
+
+  /**
+   * Steps backward through the interview with a mirrored drift (exit right,
+   * enter from left) so backward travel reads as the reverse of forward
+   * travel. From the first question it lands back on the Step 0 intro; the
+   * discarded answer is popped so re-answering records exactly once. The
+   * progress hairline and counter derive from `index` and follow for free.
+   * Blocked while a selection is mid-flight or the completion runs.
+   *
+   * @returns {void}
+   */
+  const goBack = useCallback(() => {
+    if (!hasStarted || isSubmitting || phase === 'leaving' || selectedId !== null) return;
+
+    setIsSlidingBack(true);
+    setPhase('leaving');
+    leaveTimerRef.current = window.setTimeout(() => {
+      answersRef.current = answersRef.current.slice(0, -1);
+      if (index === 0) {
+        setHasStarted(false);
+      } else {
+        setIndex((current) => current - 1);
+      }
+      setSelectedId(null);
+      setPhase('entering');
+    }, TRANSITION_MS);
+  }, [hasStarted, isSubmitting, phase, selectedId, index]);
+
+  const canGoBack = hasStarted && !isSubmitting && phase !== 'leaving' && selectedId === null;
 
   /**
    * Completes the wizard: derives a seed from every collected answer, runs
@@ -195,7 +231,7 @@ export default function QuizWizard() {
    */
   const handleSelect = useCallback(
     (question: QuizQuestion, option: QuizOption) => {
-      if (selectedId !== null || isSubmitting) return;
+      if (selectedId !== null || isSubmitting || phase === 'leaving') return;
 
       const answer: QuizAnswer = {
         questionId: question.id,
@@ -228,13 +264,55 @@ export default function QuizWizard() {
         }, TRANSITION_MS);
       }, ADVANCE_DELAY_MS);
     },
-    [completeWizard, isSubmitting, selectedId],
+    [completeWizard, isSubmitting, selectedId, phase],
+  );
+
+  /**
+   * Moves focus within the option radiogroup without selecting: arrows cycle
+   * through the four options (wrapping at the ends), Home jumps to the first
+   * and End to the last. Selection stays on Enter/Space through the native
+   * buttons, so arrowing can never submit an answer by accident. Blocked
+   * while a selection is mid-flight.
+   *
+   * @param {ReactKeyboardEvent<HTMLDivElement>} event The key down event.
+   * @returns {void}
+   */
+  const handleOptionsKeyDown = useCallback(
+    (event: ReactKeyboardEvent<HTMLDivElement>) => {
+      const isNext = event.key === 'ArrowRight' || event.key === 'ArrowDown';
+      const isPrev = event.key === 'ArrowLeft' || event.key === 'ArrowUp';
+      const isFirst = event.key === 'Home';
+      const isLast = event.key === 'End';
+      if (!isNext && !isPrev && !isFirst && !isLast) return;
+      if (selectedId !== null) return;
+
+      event.preventDefault();
+      const buttons = optionsRef.current.filter(
+        (button): button is HTMLButtonElement => button !== null,
+      );
+      if (buttons.length === 0) return;
+
+      if (isFirst) {
+        buttons[0]?.focus();
+        return;
+      }
+      if (isLast) {
+        buttons[buttons.length - 1]?.focus();
+        return;
+      }
+
+      const activeIndex = buttons.indexOf(document.activeElement as HTMLButtonElement);
+      const nextIndex =
+        (activeIndex + (isNext ? 1 : -1) + buttons.length) % buttons.length;
+      buttons[nextIndex]?.focus();
+    },
+    [selectedId],
   );
 
   const stageClass = clsx(
     styles.stage,
-    phase === 'entering' && styles.stageEntering,
-    phase === 'leaving' && styles.stageLeaving,
+    phase === 'entering' && (isSlidingBack ? styles.stageEnteringBack : styles.stageEntering),
+    phase === 'leaving' && (isSlidingBack ? styles.stageLeavingBack : styles.stageLeaving),
   );
 
   return (
@@ -257,7 +335,15 @@ export default function QuizWizard() {
                 ? 'Traducimos tus respuestas en un sistema cromático con contraste AA verificado.'
                 : 'Persistimos tu identidad en la biblioteca antes de llevarte al panel.'}
             </p>
-            <Loader2 className={styles.completionSpinner} size={18} aria-hidden="true" />
+            {/* Forge indicator — five dots for the five palette roles being
+                computed, a travelling pulse rather than a generic spinner.
+                Hidden from assistive tech: the status container already
+                announces the forging state. */}
+            <span className={styles.forgeLoader} aria-hidden="true">
+              {Array.from({ length: 5 }, (_, dotIndex) => (
+                <span key={dotIndex} className={styles.forgeLoaderDot} />
+              ))}
+            </span>
           </div>
         ) : (
           <>
@@ -306,6 +392,7 @@ export default function QuizWizard() {
               <div className={stageClass}>
                 <h1
                   ref={questionRef}
+                  id="quiz-question-heading"
                   tabIndex={-1}
                   className={styles.question}
                   aria-live="polite"
@@ -313,18 +400,27 @@ export default function QuizWizard() {
                   {currentQuestion.question}
                 </h1>
 
-                <div className={styles.options}>
+                <div
+                  className={styles.options}
+                  role="radiogroup"
+                  aria-labelledby="quiz-question-heading"
+                  onKeyDown={handleOptionsKeyDown}
+                >
                   {currentQuestion.options.map((option, optionIndex) => {
                     const isSelected = selectedId === option.id;
                     return (
                       <button
                         key={option.id}
+                        ref={(element) => {
+                          optionsRef.current[optionIndex] = element;
+                        }}
                         type="button"
                         className={clsx(
                           styles.option,
                           isSelected && styles.optionSelected,
                         )}
-                        aria-pressed={isSelected}
+                        role="radio"
+                        aria-checked={isSelected}
                         onClick={() => handleSelect(currentQuestion, option)}
                       >
                         <span className={styles.optionTop}>
@@ -376,10 +472,23 @@ export default function QuizWizard() {
             )}
 
             <footer className={styles.foot}>
-              <Link to="/dashboard" className={styles.exit}>
-                <ArrowLeft size={14} aria-hidden="true" />
-                Salir del cuestionario
-              </Link>
+              <div className={styles.footNav}>
+                <Link to="/dashboard" className={styles.exit}>
+                  <ArrowLeft size={14} aria-hidden="true" />
+                  Salir del cuestionario
+                </Link>
+                {hasStarted ? (
+                  <button
+                    type="button"
+                    className={styles.back}
+                    onClick={goBack}
+                    disabled={!canGoBack}
+                  >
+                    <ChevronLeft size={14} aria-hidden="true" />
+                    Anterior
+                  </button>
+                ) : null}
+              </div>
               <span className={styles.hint}>
                 {hasStarted
                   ? 'Tus respuestas definen el sistema cromático de tu marca.'

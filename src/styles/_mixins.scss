@@ -166,10 +166,23 @@
 }
 
 // ---------------------------------------------------------------------------
-// Reduced Motion — Disable Non-Essential Animation
+// Reduced Motion — Disable Non-Essential Animation (dual control)
+//
+// Two authorities, one contract: the OS media query stays as the pre-JS and
+// no-JS fallback (scoped out once an explicit manual choice exists), while
+// the `data-motion` attribute on <html> — driven by the MotionToggle and
+// persisted across reloads — overrides it in real time. `reduced` always
+// applies; `full` explicitly releases motion even under an OS reduce
+// preference. Nested-only: include inside a rule, never at the root.
 // ---------------------------------------------------------------------------
 @mixin reduced-motion {
   @media (prefers-reduced-motion: reduce) {
+    html:not([data-motion='full']) & {
+      @content;
+    }
+  }
+
+  html[data-motion='reduced'] & {
     @content;
   }
 }
