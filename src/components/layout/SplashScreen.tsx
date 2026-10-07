@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import ChromaForgeIcon from '@/components/brand/ChromaForgeIcon';
+import { markSplashDone } from '@/utils/splashSignal';
 import styles from './SplashScreen.module.scss';
 
 /**
@@ -65,6 +66,13 @@ export default function SplashScreen() {
       document.body.style.overflow = previousOverflow;
       document.body.style.paddingRight = previousPaddingRight;
     };
+  }, [gone]);
+
+  // WHY: release gated reveals — runs after the veil's removal commits, so
+  // the hero observer arms against an uncovered viewport and its single-shot
+  // entrance replays visibly instead of spending itself behind the veil.
+  useEffect(() => {
+    if (gone) markSplashDone();
   }, [gone]);
 
   if (!visible || gone) return null;

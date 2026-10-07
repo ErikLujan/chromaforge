@@ -44,11 +44,11 @@ export default function SectionConversion() {
         <h2 id="conversion-heading" className={clsx(styles.title, styles.revealItem)} style={{ transitionDelay: '0ms' }}>
           Forja la identidad de tu marca.
         </h2>
-        <p className={clsx(styles.meta, styles.revealItem)} style={{ transitionDelay: '60ms' }}>08 preguntas · ~2 minutos · Contraste AA verificado</p>
+        <p className={clsx(styles.meta, styles.revealItem)} style={{ transitionDelay: '90ms' }}>08 preguntas · ~2 minutos · Contraste AA verificado</p>
         {isLoading ? (
-          <span className={clsx(styles.ctaPlaceholder, styles.revealItem)} style={{ transitionDelay: '120ms' }} aria-hidden="true" />
+          <span className={clsx(styles.ctaPlaceholder, styles.revealItem)} style={{ transitionDelay: '180ms' }} aria-hidden="true" />
         ) : (
-          <div className={clsx(styles.actions, styles.revealItem)} style={{ transitionDelay: '120ms' }}>
+          <div className={clsx(styles.actions, styles.revealItem)} style={{ transitionDelay: '180ms' }}>
             <Link to={primaryTo} className={styles.primaryCta}>
               {primaryLabel}
             </Link>

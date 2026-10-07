@@ -160,14 +160,14 @@ export default function SectionSystem({ palette }: SectionSystemProps) {
           <h2 id="system-heading" className={clsx(styles.title, styles.revealItem)} style={{ transitionDelay: '0ms' }}>
             Sistema, no lista
           </h2>
-          <p className={clsx(styles.lede, styles.revealItem)} style={{ transitionDelay: '60ms' }}>
+          <p className={clsx(styles.lede, styles.revealItem)} style={{ transitionDelay: '90ms' }}>
             Cinco roles verificados que viven en superficies, tipografía y
             contextos reales. Recorre las cuatro lecturas del sistema que
             forjaste arriba.
           </p>
         </div>
 
-        <div className={clsx(styles.canvas, styles.revealItem)} style={{ transitionDelay: '120ms' }}>
+        <div className={clsx(styles.canvas, styles.revealItem)} style={{ transitionDelay: '180ms' }}>
           <div
             className={styles.tabs}
             role="tablist"

@@ -220,6 +220,11 @@ $transition-premium: 300ms $ease-out-quint;           // hover lifts — premium
 $duration-fast: 160ms;
 $duration-normal: 280ms;
 $duration-slow: 340ms;
+// Scroll-reveal choreography — landing only, transform/opacity, played once.
+// Base block rise for proof sections (stagger 90ms siblings); slower hero
+// rise with word-level split-text (stagger 28ms/word).
+$duration-reveal: 480ms;
+$duration-hero: 520ms;
 
 // ---------------------------------------------------------------------------
 // Responsive Breakpoints — Mobile-First

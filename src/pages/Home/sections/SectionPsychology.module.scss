@@ -33,8 +33,8 @@
   opacity: 0;
   transform: translateY(14px);
   transition:
-    opacity 280ms t.$ease-out-quint,
-    transform 280ms t.$ease-out-quint;
+    opacity t.$duration-reveal t.$ease-out-quint,
+    transform t.$duration-reveal t.$ease-out-quint;
 }
 
 [data-revealed] .revealItem {

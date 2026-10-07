@@ -1,0 +1,106 @@
+// ============================================================================
+// SectionTrust.module.scss
+// Trust strip — quiet hairline band, text-only capabilities. No logos, no
+// metrics, no cards: a definition list over one shared underline.
+// ============================================================================
+
+@use '../../../styles/tokens' as t;
+@use '../../../styles/mixins' as m;
+
+.section {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  border-top: 1px solid t.$color-border-subtle;
+  border-bottom: 1px solid t.$color-border-subtle;
+  background: t.$color-surface-base;
+}
+
+.inner {
+  width: 100%;
+  max-width: t.$breakpoint-2xl;
+  margin: 0 auto;
+  padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  min-width: 0;
+}
+
+.title {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  letter-spacing: t.$tracking-wide;
+  color: t.$color-text-muted;
+  max-width: 100%;
+}
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-4;
+  margin: 0;
+  min-width: 0;
+
+  @media (min-width: t.$breakpoint-md) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: t.$space-4 t.$space-8;
+  }
+
+  @media (min-width: t.$breakpoint-lg) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-1;
+  min-width: 0;
+  padding-left: t.$space-3;
+  border-left: 1px solid t.$color-border-default;
+}
+
+.term {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+  color: t.$color-text-primary;
+}
+
+.detail {
+  margin: 0;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-normal;
+  color: t.$color-text-secondary;
+  max-width: 32ch;
+}
+
+// ---------------------------------------------------------------------------
+// Scroll reveal — transform/opacity only, played once
+// ---------------------------------------------------------------------------
+
+.revealItem {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity t.$duration-reveal t.$ease-out-quint,
+    transform t.$duration-reveal t.$ease-out-quint;
+}
+
+[data-revealed].revealItem,
+[data-revealed] .revealItem {
+  opacity: 1;
+  transform: none;
+}
+
+@include m.reduced-motion {
+  .revealItem {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

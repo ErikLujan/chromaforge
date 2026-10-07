@@ -91,10 +91,23 @@
 .brandMark {
   display: inline-flex;
   flex-shrink: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  box-shadow: none;
 }
 
 .brandMarkIcon {
   display: block;
+  // Hard reset + rim feather (same as the shell header consumer): the tile
+  // carries a baked bright rim near its edge that otherwise renders as a
+  // thin circle ring around the mark.
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  -webkit-mask-image: radial-gradient(circle, black 84%, transparent 97%);
+  mask-image: radial-gradient(circle, black 84%, transparent 97%);
 }
 
 .brandName {

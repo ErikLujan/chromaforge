@@ -8,18 +8,20 @@ import styles from './SectionBrandBook.module.scss';
 /**
  * SectionBrandBook — the exportable brand book (Section 05).
  *
- * Direction contract (Batch 3 — conversion through artifact):
- *   THESIS:        the workspace output, made tangible — a fanned pile of
- *                  book pages that turns "exportar PDF" from a button label
- *                  into an object of desire.
- *   OWN-WORLD:     asymmetric editorial spread — page pile left, manifest
- *                  right; print-like stillness, physical depth from rotation
- *                  and overlap, never from glow.
+ * Direction contract (Batch 3 — conversion through artifact, compacted):
+ *   THESIS:        the workspace output, made tangible — a compact fanned
+ *                  pile of book pages that turns "exportar PDF" from a button
+ *                  label into an object of desire.
+ *   OWN-WORLD:     asymmetric editorial spread — compact page pile left
+ *                  (capped width, no stretch to the text column), manifest
+ *                  right capped at 44ch; print-like stillness, physical depth
+ *                  from rotation and overlap, never from glow.
  *   STORY:         a visitor sees the book their identity becomes — portada,
  *                  color, tipo, aplicaciones — and reaches for the
  *                  questionnaire to compile their own.
- *   FIRST VIEWPORT: a scroll chapter below the system band; spread and
- *                  manifest stagger in once via scroll reveal.
+ *   FIRST VIEWPORT: a scroll chapter below the system band; the three mock
+ *                  pages rise staggered once (translateY + opacity only,
+ *                  480ms ease-out) while the pile stays sticky on desktop.
  *   FORM:          static CSS page miniatures (rotation + negative-margin
  *                  layering, honestly captioned as illustrative preview)
  *                  beside a manifest list and one conversion action.
@@ -49,7 +51,10 @@ export default function SectionBrandBook({ palette }: SectionBrandBookProps) {
   return (
     <section className={styles.section} aria-labelledby="brandbook-heading">
       <div className={styles.inner} ref={ref} data-revealed={revealed || undefined}>
-        <div className={clsx(styles.spread, styles.revealItem)} style={{ transitionDelay: '0ms' }}>
+        {/* WHY: the spread no longer carries revealItem — the three pages
+            rise individually (staggered) instead of a stacked
+            container-plus-children double entrance. */}
+        <div className={styles.spread}>
           <div className={styles.stack} aria-hidden="true">
             <div className={styles.page} data-page="cover">
               <span className={styles.pageEyebrow}>ChromaForge · Libro de marca</span>
@@ -106,15 +111,15 @@ export default function SectionBrandBook({ palette }: SectionBrandBookProps) {
         </div>
 
         <div className={styles.manifest}>
-          <h2 id="brandbook-heading" className={clsx(styles.title, styles.revealItem)} style={{ transitionDelay: '80ms' }}>
+          <h2 id="brandbook-heading" className={clsx(styles.title, styles.revealItem)} style={{ transitionDelay: '0ms' }}>
             El libro que cierra el sistema
           </h2>
-          <p className={clsx(styles.lede, styles.revealItem)} style={{ transitionDelay: '120ms' }}>
+          <p className={clsx(styles.lede, styles.revealItem)} style={{ transitionDelay: '90ms' }}>
             Cada identidad se compila en un libro de marca en PDF: portada,
             color, tipografía y aplicaciones, con su nota de contraste. Lo que
             ves aquí se dibuja con tu propio sistema en vivo.
           </p>
-          <ul className={clsx(styles.chapters, styles.revealItem)} style={{ transitionDelay: '160ms' }}>
+          <ul className={clsx(styles.chapters, styles.revealItem)} style={{ transitionDelay: '180ms' }}>
             {CHAPTERS.map((chapter) => (
               <li key={chapter.label} className={styles.chapter}>
                 <span className={styles.chapterCheck} aria-hidden="true">
@@ -127,11 +132,11 @@ export default function SectionBrandBook({ palette }: SectionBrandBookProps) {
               </li>
             ))}
           </ul>
-          <p className={clsx(styles.meta, styles.revealItem)} style={{ transitionDelay: '200ms' }}>PDF · 4 capítulos · WCAG 2.1 AA</p>
-          <Link to="/quiz" className={clsx(styles.cta, styles.revealItem)} style={{ transitionDelay: '200ms' }}>
+          <p className={clsx(styles.meta, styles.revealItem)} style={{ transitionDelay: '270ms' }}>PDF · 4 capítulos · WCAG 2.1 AA</p>
+          <Link to="/quiz" className={clsx(styles.cta, styles.revealItem)} style={{ transitionDelay: '360ms' }}>
             Generar mi libro
           </Link>
-          <p className={clsx(styles.note, styles.revealItem)} style={{ transitionDelay: '200ms' }}>Compílalo desde tu espacio de resultados.</p>
+          <p className={clsx(styles.note, styles.revealItem)} style={{ transitionDelay: '450ms' }}>Compílalo desde tu espacio de resultados.</p>
         </div>
       </div>
     </section>

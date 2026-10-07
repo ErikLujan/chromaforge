@@ -1,0 +1,279 @@
+// ============================================================================
+// SectionShowcase.module.scss
+// Showcase — asymmetric bento of real engine outputs. Lead card tall left,
+// two stacked right on desktop; single column on mobile. Color arrives only
+// through each card's forged palette (inline styles owned by the tsx).
+// ============================================================================
+
+@use '../../../styles/tokens' as t;
+@use '../../../styles/mixins' as m;
+
+.section {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  padding-block: clamp(3rem, 7vw, 5rem);
+  border-top: 1px solid t.$color-border-subtle;
+}
+
+.inner {
+  width: 100%;
+  max-width: t.$breakpoint-2xl;
+  margin: 0 auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.75rem, 4vw, 2.75rem);
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: t.$space-3;
+  max-width: 38rem;
+  min-width: 0;
+}
+
+.title {
+  font-family: t.$font-display;
+  font-size: t.$font-size-h2;
+  font-weight: t.$font-weight-heading;
+  line-height: t.$line-height-tight;
+  letter-spacing: t.$tracking-tight;
+  color: t.$color-text-primary;
+  text-wrap: balance;
+}
+
+.lede {
+  font-family: t.$font-body;
+  font-size: t.$font-size-body;
+  line-height: t.$line-height-relaxed;
+  color: t.$color-text-secondary;
+  max-width: 44ch;
+  margin: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Grid — bento: 1 column mobile, asymmetric 7/5 with lead spanning 2 rows
+// ---------------------------------------------------------------------------
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: t.$space-4;
+  min-width: 0;
+
+  @media (min-width: t.$breakpoint-md) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: t.$breakpoint-lg) {
+    grid-template-columns: 7fr 5fr;
+    grid-template-rows: repeat(2, minmax(0, auto));
+    gap: clamp(1rem, 2.5vw, 1.5rem);
+
+    .card[data-lead] {
+      grid-row: 1 / -1;
+    }
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: t.$color-surface-primary;
+  border: 1px solid t.$color-border-subtle;
+  border-radius: t.$radius-xl;
+  transition:
+    transform t.$transition-smooth,
+    border-color t.$transition-fast;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: t.$color-border-strong;
+  }
+
+  @include m.reduced-motion {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-3;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  min-width: 0;
+
+  .card[data-lead] & {
+    @media (min-width: t.$breakpoint-lg) {
+      flex: 1;
+      justify-content: center;
+      padding: clamp(1.75rem, 3vw, 2.5rem);
+    }
+  }
+}
+
+.previewKicker {
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  margin: 0;
+}
+
+.previewTitle {
+  font-family: t.$font-display;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: t.$font-weight-heading;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+.previewSurface {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: t.$space-3;
+  padding: t.$space-4;
+  border-radius: t.$radius-md;
+  min-width: 0;
+}
+
+.previewBody {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  line-height: t.$line-height-relaxed;
+  margin: 0;
+  max-width: 36ch;
+}
+
+.previewAction {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: t.$space-2 t.$space-4;
+  border-radius: t.$radius-sm;
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-semibold;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-2;
+  padding: t.$space-4 clamp(1.25rem, 3vw, 1.75rem) clamp(1.25rem, 3vw, 1.75rem);
+  border-top: 1px solid t.$color-border-subtle;
+  min-width: 0;
+}
+
+.caption {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-primary;
+  margin: 0;
+}
+
+.hexes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: t.$space-2;
+  margin: 0;
+
+  code {
+    font-family: t.$font-mono;
+    font-size: t.$font-size-xs;
+    color: t.$color-text-secondary;
+  }
+}
+
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: t.$space-2;
+  font-family: t.$font-mono;
+  font-size: t.$font-size-xs;
+  color: t.$color-text-muted;
+  margin: 0;
+}
+
+.aaDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: t.$radius-full;
+  background: t.$color-text-disabled;
+  flex-shrink: 0;
+
+  &[data-pass] {
+    background: t.$color-success;
+  }
+}
+
+.note {
+  font-family: t.$font-body;
+  font-size: t.$font-size-small;
+  color: t.$color-text-muted;
+  margin: 0;
+  max-width: 70ch;
+}
+
+.noteLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: t.$font-weight-medium;
+  color: t.$color-text-primary;
+  text-decoration: underline;
+  text-decoration-color: t.$color-border-strong;
+  text-underline-offset: 4px;
+  transition:
+    color t.$transition-fast,
+    text-decoration-color t.$transition-fast;
+
+  &:hover {
+    color: t.$color-accent-primary-hover;
+    text-decoration-color: t.$color-accent-primary-hover;
+  }
+
+  @include m.focus-ring;
+}
+
+// ---------------------------------------------------------------------------
+// Scroll reveal — transform/opacity only, played once
+// ---------------------------------------------------------------------------
+
+.revealItem {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity t.$duration-reveal t.$ease-out-quint,
+    transform t.$duration-reveal t.$ease-out-quint;
+}
+
+[data-revealed].revealItem,
+[data-revealed] .revealItem {
+  opacity: 1;
+  transform: none;
+}
+
+@include m.reduced-motion {
+  .revealItem {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

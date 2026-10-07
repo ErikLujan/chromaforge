@@ -4,6 +4,13 @@ import './styles/globals.scss'
 import App from './App.tsx'
 import SplashScreen from './components/layout/SplashScreen'
 import { useAuthStore } from './store/useAuthStore'
+import { paintMotionAttribute } from './store/useMotionStore'
+
+// Motion hydrate guarantee (before the first render): paint the resolved
+// `data-motion` (persisted choice first, OS preference second — motion ON by
+// default) so reveals and the hero background boot in the correct mode
+// without an off/on toggle cycle. The store re-syncs on every later change.
+paintMotionAttribute();
 
 // Hard-load scroll guarantee (module scope, before the first render): the
 // browser restores the previous scroll offset on reload or URL entry, while

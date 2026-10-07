@@ -80,7 +80,7 @@ const ROLE_LABELS: Record<PaletteRole, string> = {
 const READABLE_ROLES: readonly PaletteRole[] = ['primary', 'secondary', 'accent'] as const;
 
 /** Stagger between ledger rows (scroll-reveal cascade). */
-const ROW_DELAYS = ['120ms', '160ms', '200ms', '240ms'] as const;
+const ROW_DELAYS = ['180ms', '270ms', '360ms', '450ms'] as const;
 
 /**
  * Del cuestionario al sistema — interactive ledger.
@@ -133,12 +133,12 @@ export default function SectionPsychology() {
           <h2 id="psychology-heading" className={clsx(styles.title, styles.revealItem)} style={{ transitionDelay: '0ms' }}>
             De la intuición al sistema
           </h2>
-          <p className={clsx(styles.lede, styles.revealItem)} style={{ transitionDelay: '60ms' }}>
+          <p className={clsx(styles.lede, styles.revealItem)} style={{ transitionDelay: '90ms' }}>
             El cuestionario no pregunta por colores. Pregunta por espacios,
             sonidos y materiales — y cada respuesta vota en cuatro dimensiones
             del motor. Ensaya una aquí, con la maquinaria a la vista.
           </p>
-          <ol className={clsx(styles.arc, styles.revealItem)} style={{ transitionDelay: '100ms' }} aria-label="Recorrido del cuestionario">
+          <ol className={clsx(styles.arc, styles.revealItem)} style={{ transitionDelay: '180ms' }} aria-label="Recorrido del cuestionario">
             {quizQuestions.map((question) => (
               <li
                 key={question.id}

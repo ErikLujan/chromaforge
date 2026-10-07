@@ -103,5 +103,20 @@ export const useMotionStore = create<MotionState>()(
   ),
 );
 
-syncMotionAttribute(useMotionStore.getState().reduced);
+/**
+ * Paints the resolved override onto `<html>` synchronously.
+ *
+ * WHY: single source for the pre-render paint — `main.tsx` calls this before
+ * the first render so the correct `data-motion` lands ahead of first paint
+ * instead of depending on incidental module-import order. Reads the same
+ * persisted-first value as the store initializer (motion ON unless the OS
+ * prefers reduced or a stored choice says otherwise).
+ *
+ * @returns {void}
+ */
+export function paintMotionAttribute(): void {
+  syncMotionAttribute(useMotionStore.getState().reduced);
+}
+
+paintMotionAttribute();
 useMotionStore.subscribe((state) => syncMotionAttribute(state.reduced));

@@ -49,7 +49,10 @@
 }
 
 // ---------------------------------------------------------------------------
-// Bg — dimmed aurora host (40% alpha so the field echoes, never shouts)
+// Bg — layered hero field (canvas + wash + dots + spot, all static except
+// the wash drift and the cursor spot). Full opacity: presence comes from
+// the platinum wash and the dot grid, while the canvas stays subordinate.
+// Pointer-transparent so copy and instrument stay fully interactive.
 // ---------------------------------------------------------------------------
 
 .bg {
@@ -59,7 +62,136 @@
   overflow: hidden;
   pointer-events: none;
   background-color: t.$color-bg-primary;
-  opacity: 0.4;
+}
+
+// --- Aurora wash — two platinum radials, HIGH visibility, slow alternate
+// drift (transform-only, 14s). Static but visible under reduced motion. ---
+
+.wash {
+  position: absolute;
+  inset: -10%;
+  background:
+    radial-gradient(
+      42% 38% at 30% 35%,
+      rgba(232, 234, 237, 0.2) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      40% 36% at 72% 62%,
+      rgba(185, 189, 199, 0.22) 0%,
+      transparent 70%
+    );
+  animation: chromaforge-hero-wash 14s t.$ease-in-out-strong infinite alternate;
+}
+
+@keyframes chromaforge-hero-wash {
+  from {
+    transform: translate3d(-2%, -1.5%, 0);
+  }
+  to {
+    transform: translate3d(2%, 2%, 0);
+  }
+}
+
+// --- Dot grid — 1px platinum dots on 24px, masked toward the edges.
+// Always static (no animation), so it survives reduced motion as-is. ---
+
+.dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(232, 234, 237, 0.16) 1px, transparent 1.6px);
+  background-size: 24px 24px;
+  // stylelint-disable-next-line property-no-unknown
+  mask-image: radial-gradient(78% 72% at 50% 42%, black 25%, transparent 82%);
+  // stylelint-disable-next-line property-no-unknown
+  -webkit-mask-image: radial-gradient(78% 72% at 50% 42%, black 25%, transparent 82%);
+}
+
+// --- Cursor spotlight — 260px-radius platinum glow positioned by the
+// useHeroSpotlight hook (rAF writes transform + --mx/--my on THIS element
+// only). Opacity fades through CSS; parked at 0 for touch/reduced motion. ---
+
+.spot {
+  --mx: 50%;
+  --my: 50%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(
+    circle,
+    rgba(232, 234, 237, 0.13) 0%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 300ms t.$ease-out;
+}
+
+// ---------------------------------------------------------------------------
+// Hero entrance — split-text word rise + block rise (transform/opacity only,
+// played once via the hero useReveal arming, staggered by inline delays).
+// ---------------------------------------------------------------------------
+
+.rise {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity t.$duration-hero t.$ease-out-quint,
+    transform t.$duration-hero t.$ease-out-quint;
+}
+
+[data-revealed] .rise {
+  opacity: 1;
+  transform: none;
+}
+
+// --- Split-text mask: overflow-hidden word windows; descender guard
+// (0.12em) keeps 'p/y/g' intact at rest without clipping. ---
+
+.mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(110%);
+  transition:
+    opacity t.$duration-hero t.$ease-out-quint,
+    transform t.$duration-hero t.$ease-out-quint;
+}
+
+[data-revealed] .word {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@include m.reduced-motion {
+  .rise {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .word {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .wash {
+    animation: none;
+  }
+
+  .spot {
+    opacity: 0;
+    transition: none;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -234,9 +366,10 @@
   border-radius: t.$radius-sm;
   cursor: pointer;
   overflow: hidden;
+  // WHY: transform + background only — box-shadow stays out of the
+  // transition (paint cost per frame) and snaps with the hover state.
   transition:
     transform t.$transition-premium,
-    box-shadow t.$transition-smooth,
     background-color t.$transition-fast;
   text-decoration: none;
   white-space: nowrap;
@@ -244,10 +377,21 @@
 
   &:hover {
     color: #0a0a0b;
-    transform: translateY(-2px) scale(1.01);
-    box-shadow:
-      0 12px 30px rgba(0, 0, 0, 0.35),
-      0 0 24px rgba(242, 243, 245, 0.12);
+  }
+
+  // WHY: lift, shadow, and sheen are hover-gated to fine pointers — touch
+  // taps must never fire a false rise or a 600ms sweep.
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.35),
+        0 0 24px rgba(242, 243, 245, 0.12);
+    }
+
+    &:hover::after {
+      transform: translateX(100%);
+    }
   }
 
   &:active {
@@ -271,10 +415,6 @@
     transform: translateX(-100%);
     pointer-events: none;
     transition: transform 0.6s t.$ease-out-expo;
-  }
-
-  &:hover::after {
-    transform: translateX(100%);
   }
 }
 

@@ -39,8 +39,8 @@
   opacity: 0;
   transform: translateY(14px);
   transition:
-    opacity 280ms t.$ease-out-quint,
-    transform 280ms t.$ease-out-quint;
+    opacity t.$duration-reveal t.$ease-out-quint,
+    transform t.$duration-reveal t.$ease-out-quint;
 }
 
 [data-revealed] .revealItem {
@@ -64,14 +64,24 @@
   display: flex;
   flex-direction: column;
   gap: t.$space-3;
+  width: 100%;
+  max-width: 30rem;
   min-width: 0;
+  align-self: start;
+
+  // WHY: sticky pile on desktop — the mock holds while the manifest
+  // scrolls beside it (Rapanui-inspired hold, no parallax, no JS).
+  @media (min-width: t.$breakpoint-lg) {
+    position: sticky;
+    top: calc(t.$header-height + t.$space-6);
+  }
 }
 
 .stack {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: clamp(1.25rem, 3vw, 2rem);
+  padding: clamp(1rem, 2.5vw, 1.25rem);
   overflow: hidden;
   overflow: clip;
   border-radius: t.$radius-lg;
@@ -80,32 +90,59 @@
 }
 
 .page {
+  --page-tilt: 0deg;
   position: relative;
   display: flex;
   flex-direction: column;
   gap: t.$space-2;
-  width: min(100%, 21rem);
+  width: min(100%, 17.5rem);
   min-width: 0;
-  aspect-ratio: 3 / 4;
-  padding: clamp(1rem, 2.5vw, 1.5rem);
+  aspect-ratio: 4 / 5;
+  max-height: 22rem;
+  padding: clamp(0.875rem, 2vw, 1.125rem);
   background: t.$color-surface-primary;
   border: 1px solid t.$color-border-default;
   border-radius: t.$radius-md;
   box-shadow: t.$shadow-lg;
 
+  // WHY: scroll rise — pages enter from below once (staggered below),
+  // tilt preserved in the same transform so rotation survives the reveal.
+  opacity: 0;
+  transform: translateY(24px) rotate(var(--page-tilt));
+  transition:
+    opacity t.$duration-reveal t.$ease-out-quint,
+    transform t.$duration-reveal t.$ease-out-quint;
+
   &[data-page='cover'] {
-    transform: rotate(-3deg);
+    --page-tilt: -3deg;
   }
 
   &[data-page='colors'] {
+    --page-tilt: 2deg;
     align-self: flex-end;
-    margin-top: clamp(-7rem, -18%, -3.5rem);
-    transform: rotate(2deg);
+    margin-top: clamp(-4.5rem, -14%, -2.5rem);
+    transition-delay: 90ms;
   }
 
   &[data-page='type'] {
-    margin-top: clamp(-7rem, -18%, -3.5rem);
-    transform: rotate(-1.25deg);
+    --page-tilt: -1.25deg;
+    margin-top: clamp(-4.5rem, -14%, -2.5rem);
+    transition-delay: 180ms;
+  }
+}
+
+// WHY: single useReveal arming drives every page — no extra observer,
+// no JS per page, played once then stillness.
+[data-revealed] .page {
+  opacity: 1;
+  transform: translateY(0) rotate(var(--page-tilt));
+}
+
+@include m.reduced-motion {
+  .page {
+    opacity: 1;
+    transform: rotate(var(--page-tilt));
+    transition: none;
   }
 }
 
@@ -142,15 +179,15 @@
 .pageStripTone {
   flex: 1;
   min-width: 0;
-  height: 1.5rem;
+  height: 1.125rem;
   border-radius: t.$radius-sm;
 }
 
 .pageRows {
   display: flex;
   flex-direction: column;
-  gap: t.$space-2;
-  margin-top: t.$space-2;
+  gap: t.$space-1;
+  margin-top: t.$space-1;
 }
 
 .pageRow {
@@ -160,8 +197,8 @@
 }
 
 .pageRowTone {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.375rem;
+  height: 1.375rem;
   flex-shrink: 0;
   border-radius: t.$radius-sm;
 }
@@ -169,14 +206,14 @@
 .pageRowBar {
   flex: 1;
   min-width: 0;
-  height: 0.625rem;
+  height: 0.5rem;
   border-radius: t.$radius-full;
   background: t.$color-surface-interactive;
 }
 
 .pageAa {
   font-family: t.$font-display;
-  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-size: clamp(2rem, 4vw, 2.75rem);
   font-weight: t.$font-weight-display;
   line-height: 1;
 }
@@ -184,12 +221,12 @@
 .pageLines {
   display: flex;
   flex-direction: column;
-  gap: t.$space-2;
-  margin-top: t.$space-2;
+  gap: t.$space-1;
+  margin-top: t.$space-1;
 }
 
 .pageLine {
-  height: 0.625rem;
+  height: 0.5rem;
   border-radius: t.$radius-full;
   background: t.$color-surface-interactive;
 
@@ -200,7 +237,7 @@
 
 .pageFolio {
   margin-top: auto;
-  padding-top: t.$space-3;
+  padding-top: t.$space-2;
   font-family: t.$font-mono;
   font-size: 0.625rem;
   color: t.$color-text-muted;
@@ -223,6 +260,7 @@
   align-items: flex-start;
   gap: clamp(0.875rem, 2vw, 1.25rem);
   min-width: 0;
+  max-width: 44ch;
 }
 
 .title {
@@ -240,7 +278,7 @@
   font-size: clamp(0.95rem, 1.4vw, 1.0625rem);
   line-height: t.$line-height-relaxed;
   color: t.$color-text-secondary;
-  max-width: 56ch;
+  max-width: 44ch;
 }
 
 .chapters {
@@ -318,7 +356,14 @@
 
   &:hover {
     color: #0a0a0b;
-    transform: translateY(-1px);
+  }
+
+  // WHY: hover lift gated to fine pointers — touch taps must never fire
+  // a false rise (STANDARDS: accessibility).
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      transform: translateY(-1px);
+    }
   }
 
   &:active {

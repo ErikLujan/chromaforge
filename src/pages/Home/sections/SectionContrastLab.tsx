@@ -79,7 +79,7 @@ export default function SectionContrastLab({ palette }: SectionContrastLabProps)
           <h2 id="contrast-heading" className={clsx(styles.title, styles.revealItem)} style={{ transitionDelay: '0ms' }}>
             Accesibilidad verificada, no prometida
           </h2>
-          <p className={clsx(styles.lede, styles.revealItem)} style={{ transitionDelay: '60ms' }}>
+          <p className={clsx(styles.lede, styles.revealItem)} style={{ transitionDelay: '90ms' }}>
             Cada rol legible se corrige contra su superficie antes de liberarse.
             Compruébalo con el sistema que forjaste arriba: cambia los roles y
             activa la corrección.
@@ -89,7 +89,7 @@ export default function SectionContrastLab({ palette }: SectionContrastLabProps)
         <div className={styles.workbench}>
           <div
             className={clsx(styles.controls, styles.revealItem)}
-            style={{ transitionDelay: '120ms' }}
+            style={{ transitionDelay: '180ms' }}
           >
             <div className={styles.group}>
               <span className={styles.label} id="contrast-fg-label">
@@ -190,7 +190,7 @@ export default function SectionContrastLab({ palette }: SectionContrastLabProps)
 
           <div
             className={clsx(styles.specimen, styles.revealItem)}
-            style={{ transitionDelay: '180ms', backgroundColor: surfaceHex }}
+            style={{ transitionDelay: '270ms', backgroundColor: surfaceHex }}
           >
             <p className={styles.specimenCaption} style={{ color: shownHex }}>
               Espécimen en vivo
